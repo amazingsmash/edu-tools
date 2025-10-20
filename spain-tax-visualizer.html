@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spain Tax Visualizer — Interactive</title>
+  <title>Tax Visualizer &mdash; Interactive</title>
   <style>
     :root {
       color-scheme: dark;
@@ -157,20 +157,131 @@
       font-size: 0.9rem;
     }
 
-    /* IRPF chart */
+    /* Income Tax chart */
     .chart-card {
       display: flex;
       flex-direction: column;
       gap: 18px;
     }
 
-    #irpf-chart {
+    #income-tax-chart {
       width: 100%;
       height: clamp(220px, 32vw, 320px);
       border: 1px solid rgba(148, 163, 184, 0.12);
       border-radius: 16px;
       background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(6px);
+    }
+
+    .income-tax-layout {
+      display: grid;
+      gap: 20px;
+    }
+
+    @media (min-width: 960px) {
+      .income-tax-layout {
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        align-items: start;
+      }
+    }
+
+    .tax-table-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 18px;
+      backdrop-filter: blur(8px);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .table-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .table-controls button {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.18) 0%, rgba(14, 165, 233, 0.32) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: var(--fg);
+      font-size: 0.85rem;
+      letter-spacing: 0.03em;
+      padding: 8px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+    }
+
+    .table-controls button:hover,
+    .table-controls button:focus-visible {
+      outline: none;
+      transform: translateY(-1px);
+      border-color: rgba(56, 189, 248, 0.55);
+      box-shadow: 0 12px 22px rgba(14, 165, 233, 0.18);
+    }
+
+    .bracket-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .bracket-table thead th {
+      text-align: left;
+      font-weight: 600;
+      padding-bottom: 10px;
+      color: var(--fg-muted);
+    }
+
+    .bracket-table tbody td {
+      padding: 6px 8px;
+      vertical-align: middle;
+    }
+
+    .bracket-table input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 10px;
+      color: var(--fg);
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .bracket-table input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.28);
+    }
+
+    .delete-row {
+      background: linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, rgba(248, 113, 113, 0.26) 100%);
+      border: 1px solid rgba(248, 113, 113, 0.38);
+      border-radius: 999px;
+      color: #fda4af;
+      cursor: pointer;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+    }
+
+    .delete-row:hover,
+    .delete-row:focus-visible {
+      outline: none;
+      transform: translateY(-1px);
+      border-color: rgba(248, 113, 113, 0.6);
+      box-shadow: 0 10px 20px rgba(248, 113, 113, 0.18);
+    }
+
+    .bracket-table tbody tr:not(:last-child) td {
+      border-bottom: 1px solid rgba(148, 163, 184, 0.08);
     }
 
     .chart-caption {
@@ -324,9 +435,9 @@
   <div id="tooltip" role="tooltip" aria-hidden="true"></div>
   <main>
     <section class="panel">
-      <h1>Spain Tax Visualizer — Interactive</h1>
+      <h1>Tax Visualizer &mdash; Interactive</h1>
       <p>
-        Adjust the sliders to explore how salary, social security, income tax (IRPF), and indirect taxes affect take-home pay for software engineers working in Spain.
+        An interactive simulator to explore how taxes reduce your take-home pay.
       </p>
     </section>
 
@@ -362,8 +473,8 @@
         </div>
         <div class="input-item">
           <label for="personalAllowance" class="tooltip-source" tabindex="0"
-                 data-tooltip-en="Personal allowance: amount exempt from IRPF due to personal circumstances."
-                 data-tooltip-es="Mínimo personal: importe exento de IRPF por circunstancias personales.">
+                 data-tooltip-en="Personal allowance: amount exempt from Income Tax (IRPF is the Spanish equivalent) due to personal circumstances."
+                 data-tooltip-es="Mínimo personal: importe exento del impuesto sobre la renta (IRPF es el equivalente español) por circunstancias personales.">
             Personal allowance (€/year)
           </label>
           <input type="number" id="personalAllowance" min="0" step="50" value="5550">
@@ -389,10 +500,63 @@
 
     <section class="panel chart-card">
       <div class="section-title">
-        <h2>IRPF Brackets</h2>
-        <span>Combined national + regional rates (2025)</span>
+        <h2>Income Tax Brackets</h2>
+        <span>Adjust thresholds and rates below</span>
       </div>
-      <svg id="irpf-chart" viewBox="0 0 100 60" role="img" aria-label="IRPF progressive brackets for Spain"></svg>
+      <div class="income-tax-layout">
+        <svg id="income-tax-chart" viewBox="0 0 100 60" role="img" aria-label="Income tax brackets visualization"></svg>
+        <div class="tax-table-card">
+          <div class="table-controls">
+            <button type="button" id="add-bracket" class="tooltip-source" tabindex="0"
+                    data-tooltip-en="Add bracket: insert a new tax bracket that you can customise."
+                    data-tooltip-es="Añadir tramo: inserta un nuevo tramo fiscal que puedes personalizar.">
+              Add bracket
+            </button>
+            <button type="button" id="reset-brackets" class="tooltip-source" tabindex="0"
+                    data-tooltip-en="Reset defaults: restore the original bracket configuration."
+                    data-tooltip-es="Restablecer valores: recupera la configuración original de tramos.">
+              Reset defaults
+            </button>
+          </div>
+          <div class="table-wrapper">
+            <table class="bracket-table">
+              <thead>
+                <tr>
+                  <th>
+                    <span class="tooltip-source" tabindex="0"
+                          data-tooltip-en="Min (€): lowest taxable amount covered by this bracket."
+                          data-tooltip-es="Mínimo (€): cantidad mínima sometida a este tramo.">
+                      Min (€)
+                    </span>
+                  </th>
+                  <th>
+                    <span class="tooltip-source" tabindex="0"
+                          data-tooltip-en="Max (€): highest taxable amount in this bracket (leave blank for no upper limit)."
+                          data-tooltip-es="Máximo (€): importe máximo del tramo (déjalo vacío para sin límite superior).">
+                      Max (€)
+                    </span>
+                  </th>
+                  <th>
+                    <span class="tooltip-source" tabindex="0"
+                          data-tooltip-en="Rate (%): percentage of tax applied within this bracket (IRPF is the Spanish equivalent)."
+                          data-tooltip-es="Porcentaje (%): porcentaje de impuesto aplicado dentro de este tramo (IRPF es el equivalente español).">
+                      Rate (%)
+                    </span>
+                  </th>
+                  <th>
+                    <span class="tooltip-source" tabindex="0"
+                          data-tooltip-en="Actions: remove brackets you no longer need."
+                          data-tooltip-es="Acciones: elimina los tramos que ya no necesites.">
+                      Actions
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="bracket-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
       <div class="chart-caption">
         Each bar shows the marginal rate for that bracket. Highlighted bars indicate the portion of your taxable base that falls into the bracket.
       </div>
@@ -453,9 +617,9 @@
           <div class="summary-sub" data-summary="employeeRate"></div>
         </div>
         <div class="summary-item">
-          <h3>IRPF paid</h3>
-          <div class="summary-value" data-summary="irpf"></div>
-          <div class="summary-sub" data-summary="irpfEffective"></div>
+          <h3>Income Tax paid</h3>
+          <div class="summary-value" data-summary="incomeTax"></div>
+          <div class="summary-sub" data-summary="incomeTaxEffective"></div>
         </div>
         <div class="summary-item">
           <h3>Net salary</h3>
@@ -486,12 +650,19 @@
   </main>
 
   <script>
-
-    const numberFormat = new Intl.NumberFormat("en-GB", {
+    const currencyFormatEn = new Intl.NumberFormat("en-GB", {
       style: "currency",
       currency: "EUR",
       maximumFractionDigits: 0
     });
+
+    const currencyFormatEs = new Intl.NumberFormat("es-ES", {
+      style: "currency",
+      currency: "EUR",
+      maximumFractionDigits: 0
+    });
+
+    const numberFormat = currencyFormatEn;
 
     const percentFormat = new Intl.NumberFormat("en-GB", {
       style: "percent",
@@ -528,20 +699,24 @@
       tooltipEl.style.top = event.clientY + offset + "px";
     });
 
-    document.addEventListener("mouseenter", (event) => {
+    document.addEventListener("pointerover", (event) => {
       const source = event.target.closest && event.target.closest("[data-tooltip-en]");
-      if (!source) {
+      if (!source || source === activeTooltipSource) {
         return;
       }
       showTooltip(source);
-    }, true);
+    });
 
-    document.addEventListener("mouseleave", (event) => {
-      if (!event.target.closest || !event.target.closest("[data-tooltip-en]")) {
+    document.addEventListener("pointerout", (event) => {
+      if (!activeTooltipSource) {
+        return;
+      }
+      const related = event.relatedTarget;
+      if (related && related.closest && related.closest("[data-tooltip-en]") === activeTooltipSource) {
         return;
       }
       hideTooltip();
-    }, true);
+    });
 
     document.addEventListener("focusin", (event) => {
       const source = event.target.closest && event.target.closest("[data-tooltip-en]");
@@ -550,16 +725,14 @@
       }
       showTooltip(source);
       const rect = source.getBoundingClientRect();
-      tooltipEl.style.left = rect.left + rect.width + 12 + "px";
+      tooltipEl.style.left = rect.right + 14 + "px";
       tooltipEl.style.top = rect.top + window.scrollY + "px";
     });
 
     document.addEventListener("focusout", (event) => {
-      const next = event.relatedTarget;
-      if (next && next.closest && next.closest("[data-tooltip-en]")) {
-        return;
+      if (activeTooltipSource === event.target) {
+        hideTooltip();
       }
-      hideTooltip();
     });
 
     const inputs = {
@@ -571,30 +744,241 @@
       indirect: document.getElementById("indirectRate")
     };
 
-    const irpfBrackets = [
-      { start: 0, end: 12450, rate: 0.19, label: "0 – €12,450", labelEs: "0 – 12.450 €" },
-      { start: 12450, end: 20200, rate: 0.24, label: "€12,450 – €20,200", labelEs: "12.450 – 20.200 €" },
-      { start: 20200, end: 35200, rate: 0.30, label: "€20,200 – €35,200", labelEs: "20.200 – 35.200 €" },
-      { start: 35200, end: 60000, rate: 0.37, label: "€35,200 – €60,000", labelEs: "35.200 – 60.000 €" },
-      { start: 60000, end: 300000, rate: 0.45, label: "€60,000 – €300,000", labelEs: "60.000 – 300.000 €" },
-      { start: 300000, end: Infinity, rate: 0.47, label: "> €300,000", labelEs: "> 300.000 €" }
+    const defaultTaxBrackets = [
+      { min: 0, max: 12450, rate: 0.19 },
+      { min: 12450, max: 20200, rate: 0.24 },
+      { min: 20200, max: 35200, rate: 0.30 },
+      { min: 35200, max: 60000, rate: 0.37 },
+      { min: 60000, max: 300000, rate: 0.45 },
+      { min: 300000, max: Infinity, rate: 0.47 }
     ];
 
-    function calculateIRPF(taxableBase) {
-      let remaining = taxableBase;
-      const breakdown = irpfBrackets.map((bracket) => {
-        const span = bracket.end === Infinity ? Math.max(remaining, 0) : Math.max(bracket.end - bracket.start, 0);
+    const bracketTableBody = document.getElementById("bracket-table-body");
+    const addBracketBtn = document.getElementById("add-bracket");
+    const resetBracketsBtn = document.getElementById("reset-brackets");
+
+    function cloneBracket(bracket) {
+      return {
+        min: Number(bracket.min) || 0,
+        max: Number.isFinite(bracket.max) ? bracket.max : Infinity,
+        rate: Number(bracket.rate) || 0
+      };
+    }
+
+    let taxBrackets = defaultTaxBrackets.map(cloneBracket);
+
+    function normalizeBrackets(brackets) {
+      const sorted = brackets.map((bracket) => {
+        const minValue = Math.max(0, Number(bracket.min) || 0);
+        let maxValue;
+        if (bracket.max === "" || bracket.max === null || bracket.max === undefined || !Number.isFinite(bracket.max)) {
+          maxValue = Infinity;
+        } else {
+          maxValue = Math.max(minValue, Number(bracket.max) || 0);
+        }
+        const rateValue = Math.max(0, Number(bracket.rate) || 0);
+        return { min: minValue, max: maxValue, rate: rateValue };
+      }).sort((a, b) => a.min - b.min);
+      for (let i = 1; i < sorted.length; i += 1) {
+        const previous = sorted[i - 1];
+        const current = sorted[i];
+        if (current.min < previous.min) {
+          current.min = previous.min;
+        }
+        previous.max = Number.isFinite(previous.max) ? Math.min(Math.max(previous.min, previous.max), current.min) : current.min;
+      }
+      if (sorted.length > 0) {
+        sorted[sorted.length - 1].max = Infinity;
+      }
+      return sorted;
+    }
+
+    function formatRangeEn(bracket) {
+      const minLabel = currencyFormatEn.format(bracket.min);
+      if (!Number.isFinite(bracket.max)) {
+        return minLabel + " and above";
+      }
+      return minLabel + " – " + currencyFormatEn.format(bracket.max);
+    }
+
+    function formatRangeEs(bracket) {
+      const minLabel = currencyFormatEs.format(bracket.min);
+      if (!Number.isFinite(bracket.max)) {
+        return minLabel + " en adelante";
+      }
+      return minLabel + " – " + currencyFormatEs.format(bracket.max);
+    }
+
+    function renderTaxBracketTable() {
+      taxBrackets = normalizeBrackets(taxBrackets);
+      bracketTableBody.innerHTML = "";
+      taxBrackets.forEach((bracket, index) => {
+        const row = document.createElement("tr");
+        row.dataset.index = String(index);
+
+        const minCell = document.createElement("td");
+        const minInput = document.createElement("input");
+        minInput.type = "number";
+        minInput.inputMode = "decimal";
+        minInput.min = "0";
+        minInput.step = "100";
+        minInput.value = bracket.min ? String(Math.round(bracket.min)) : "0";
+        minInput.dataset.field = "min";
+        minInput.addEventListener("input", () => updateBracketValue(index, "min", minInput.value));
+        minInput.addEventListener("change", handleBracketChange);
+        minCell.appendChild(minInput);
+
+        const maxCell = document.createElement("td");
+        const maxInput = document.createElement("input");
+        maxInput.type = "number";
+        maxInput.inputMode = "decimal";
+        maxInput.min = "0";
+        maxInput.step = "100";
+        maxInput.placeholder = "∞";
+        maxInput.value = Number.isFinite(bracket.max) ? String(Math.round(bracket.max)) : "";
+        maxInput.dataset.field = "max";
+        maxInput.addEventListener("input", () => updateBracketValue(index, "max", maxInput.value));
+        maxInput.addEventListener("change", handleBracketChange);
+        maxCell.appendChild(maxInput);
+
+        const rateCell = document.createElement("td");
+        const rateInput = document.createElement("input");
+        rateInput.type = "number";
+        rateInput.inputMode = "decimal";
+        rateInput.min = "0";
+        rateInput.step = "0.01";
+        const percentValue = (bracket.rate * 100).toFixed(2).replace(/\.00$/, "");
+        rateInput.value = percentValue;
+        rateInput.dataset.field = "rate";
+        rateInput.addEventListener("input", () => updateBracketValue(index, "rate", rateInput.value));
+        rateInput.addEventListener("change", handleBracketChange);
+        rateCell.appendChild(rateInput);
+
+        const actionCell = document.createElement("td");
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "delete-row tooltip-source";
+        deleteButton.textContent = "Delete";
+        deleteButton.tabIndex = 0;
+        deleteButton.setAttribute("data-tooltip-en", "Delete bracket: remove this range from the table.");
+        deleteButton.setAttribute("data-tooltip-es", "Eliminar tramo: quita este rango de la tabla.");
+        deleteButton.addEventListener("click", () => deleteBracket(index));
+        actionCell.appendChild(deleteButton);
+
+        row.appendChild(minCell);
+        row.appendChild(maxCell);
+        row.appendChild(rateCell);
+        row.appendChild(actionCell);
+
+        bracketTableBody.appendChild(row);
+      });
+    }
+
+    function updateBracketValue(index, field, rawValue) {
+      const bracket = taxBrackets[index];
+      if (!bracket) {
+        return;
+      }
+      if (field === "rate") {
+        const percent = parseFloat(rawValue);
+        bracket.rate = Number.isNaN(percent) ? 0 : Math.max(0, percent) / 100;
+      } else if (field === "max") {
+        if (rawValue === "" || rawValue === null) {
+          bracket.max = Infinity;
+        } else {
+          const parsed = parseFloat(rawValue);
+          bracket.max = Number.isNaN(parsed) ? Infinity : Math.max(0, parsed);
+        }
+      } else {
+        const parsed = parseFloat(rawValue);
+        bracket.min = Number.isNaN(parsed) ? 0 : Math.max(0, parsed);
+      }
+      compute();
+    }
+
+    function handleBracketChange() {
+      taxBrackets = normalizeBrackets(taxBrackets);
+      renderTaxBracketTable();
+      compute();
+    }
+
+    function deleteBracket(index) {
+      if (taxBrackets.length <= 1) {
+        return;
+      }
+      taxBrackets.splice(index, 1);
+      taxBrackets = normalizeBrackets(taxBrackets);
+      renderTaxBracketTable();
+      compute();
+    }
+
+    function addBracket() {
+      taxBrackets = normalizeBrackets(taxBrackets);
+      if (taxBrackets.length === 0) {
+        taxBrackets.push({ min: 0, max: Infinity, rate: 0.2 });
+      } else {
+        const lastIndex = taxBrackets.length - 1;
+        const last = taxBrackets[lastIndex];
+        if (!Number.isFinite(last.max)) {
+          const newMin = last.min;
+          const newMax = newMin + 10000;
+          const newRate = last.rate;
+          taxBrackets[lastIndex] = { ...last, min: newMax, max: Infinity };
+          taxBrackets.splice(lastIndex, 0, { min: newMin, max: newMax, rate: newRate });
+        } else {
+          const newMin = last.max;
+          const newMax = newMin + 10000;
+          const newRate = last.rate;
+          taxBrackets.push({ min: newMin, max: newMax, rate: newRate });
+        }
+      }
+      taxBrackets = normalizeBrackets(taxBrackets);
+      renderTaxBracketTable();
+      compute();
+    }
+
+    function resetBrackets() {
+      taxBrackets = defaultTaxBrackets.map(cloneBracket);
+      renderTaxBracketTable();
+      compute();
+    }
+
+    addBracketBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      addBracket();
+    });
+
+    resetBracketsBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      resetBrackets();
+    });
+
+    function calculateIncomeTax(taxableBase) {
+      const sorted = normalizeBrackets(taxBrackets).map(cloneBracket);
+      let remaining = Math.max(0, taxableBase);
+      const breakdown = sorted.map((bracket) => {
+        const span = Number.isFinite(bracket.max) ? Math.max(0, bracket.max - bracket.min) : remaining;
         const taxableAmount = Math.max(0, Math.min(remaining, span));
         const taxAmount = taxableAmount * bracket.rate;
         remaining = Math.max(0, remaining - taxableAmount);
         return { ...bracket, taxableAmount, taxAmount };
       });
+      if (remaining > 0) {
+        const last = breakdown[breakdown.length - 1];
+        if (last) {
+          last.taxableAmount += remaining;
+          last.taxAmount += remaining * last.rate;
+        } else {
+          breakdown.push({ min: 0, max: Infinity, rate: 0, taxableAmount: remaining, taxAmount: 0 });
+        }
+        remaining = 0;
+      }
       const total = breakdown.reduce((sum, item) => sum + item.taxAmount, 0);
-      return { total, breakdown };
+      return { total, breakdown, sorted };
     }
 
-    function renderIrpfChart(breakdown, taxableBase) {
-      const svg = document.getElementById("irpf-chart");
+    function renderIncomeTaxChart(breakdown, taxableBase, sorted) {
+      const svg = document.getElementById("income-tax-chart");
       while (svg.firstChild) {
         svg.removeChild(svg.firstChild);
       }
@@ -608,44 +992,40 @@
       baseline.setAttribute("stroke-width", "0.6");
       svg.appendChild(baseline);
 
-      const maxRate = Math.max(...irpfBrackets.map((item) => item.rate));
-      const displayCap = 350000;
-      const minimumShare = 0.08;
-
-      const rawWidths = irpfBrackets.map((bracket) => {
-        if (bracket.end === Infinity) {
+      const maxRate = Math.max(0.01, ...sorted.map((item) => item.rate));
+      const displayCap = Math.max(350000, ...sorted.map((bracket) => Number.isFinite(bracket.max) ? bracket.max : bracket.min + taxableBase));
+      const rawWidths = sorted.map((bracket) => {
+        if (!Number.isFinite(bracket.max)) {
           return displayCap * 0.2;
         }
-        return Math.max(bracket.end - bracket.start, 1);
+        return Math.max(1, bracket.max - bracket.min);
       });
-
-      const adjusted = rawWidths.map((value) => Math.max(value, displayCap * minimumShare));
-      const totalWidth = adjusted.reduce((acc, value) => acc + value, 0);
-      const widths = adjusted.map((value) => (value / totalWidth) * 100);
+      const totalWidth = rawWidths.reduce((sum, value) => sum + value, 0) || 1;
+      const widths = rawWidths.map((value) => (value / totalWidth) * 100);
 
       let cursor = 0;
 
       breakdown.forEach((item, index) => {
         const width = widths[index] || (100 / breakdown.length);
         const barHeight = (item.rate / maxRate) * 46;
-        const fill = item.taxableAmount > 0 ? "#38bdf8" : "rgba(56, 189, 248, 0.3)";
-
         const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
         group.setAttribute("tabindex", "0");
-        group.setAttribute("data-tooltip-en", item.label + " taxed at " + Math.round(item.rate * 100) + "%.");
-        group.setAttribute("data-tooltip-es", item.labelEs + " gravado al " + Math.round(item.rate * 100) + " %.");
+        const tooltipEn = formatRangeEn(item) + " taxed at " + Math.round(item.rate * 100) + "% (Income Tax, IRPF equivalent).";
+        const tooltipEs = formatRangeEs(item) + " gravado al " + Math.round(item.rate * 100) + " % (IRPF, equivalente español).";
+        group.setAttribute("data-tooltip-en", tooltipEn);
+        group.setAttribute("data-tooltip-es", tooltipEs);
 
-        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        rect.setAttribute("x", cursor.toFixed(2));
-        rect.setAttribute("y", (55 - barHeight).toFixed(2));
-        rect.setAttribute("width", width.toFixed(2));
-        rect.setAttribute("height", barHeight.toFixed(2));
-        rect.setAttribute("rx", "2");
-        rect.setAttribute("fill", fill);
-        group.appendChild(rect);
+        const bar = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        bar.setAttribute("x", cursor.toFixed(2));
+        bar.setAttribute("y", (55 - barHeight).toFixed(2));
+        bar.setAttribute("width", width.toFixed(2));
+        bar.setAttribute("height", barHeight.toFixed(2));
+        bar.setAttribute("rx", "2");
+        bar.setAttribute("fill", item.taxableAmount > 0 ? "#38bdf8" : "rgba(56, 189, 248, 0.3)");
+        group.appendChild(bar);
 
-        const span = item.end === Infinity ? Math.max(taxableBase - item.start, 0) : Math.max(item.end - item.start, 1);
-        const coverage = span > 0 ? Math.min(item.taxableAmount / span, 1) : 0;
+        const bracketSpan = Number.isFinite(item.max) ? Math.max(1, item.max - item.min) : Math.max(1, taxableBase - item.min);
+        const coverage = Math.min(1, Math.max(0, item.taxableAmount / bracketSpan));
         if (coverage > 0) {
           const highlight = document.createElementNS("http://www.w3.org/2000/svg", "rect");
           const highlightHeight = barHeight * coverage;
@@ -705,13 +1085,13 @@
         element.setAttribute("data-tooltip-es", segment.tooltipEs);
         element.innerHTML = `
           <strong>${segment.label}</strong>
-          <span>${numberFormat.format(segment.value)} · ${percent.toFixed(1)}%</span>
+          <span>${numberFormat.format(segment.value)} &middot; ${percent.toFixed(1)}%</span>
         `;
         bar.appendChild(element);
       });
     }
 
-    function renderGrossToNetBar(gross, employeeSS, irpf, net) {
+    function renderGrossToNetBar(gross, employeeSS, incomeTax, net) {
       const bar = document.getElementById("gross-to-net-bar");
       bar.innerHTML = "";
       const segments = [
@@ -723,11 +1103,11 @@
           tooltipEs: "Seguridad Social del empleado: contribución a sanidad y pensiones."
         },
         {
-          label: "IRPF",
-          value: irpf,
+          label: "Income Tax",
+          value: incomeTax,
           color: "linear-gradient(135deg, #f43f5e 0%, #fb7185 95%)",
-          tooltipEn: "IRPF: personal income tax withheld by the employer.",
-          tooltipEs: "IRPF: impuesto sobre la renta retenido por la empresa."
+          tooltipEn: "Income Tax (IRPF is the Spanish equivalent): personal income tax withheld by the employer.",
+          tooltipEs: "Impuesto sobre la renta (IRPF es el equivalente español): retención practicada por la empresa."
         },
         {
           label: "Net salary",
@@ -752,7 +1132,7 @@
         element.setAttribute("data-tooltip-es", segment.tooltipEs);
         element.innerHTML = `
           <strong>${segment.label}</strong>
-          <span>${numberFormat.format(segment.value)} · ${percent.toFixed(1)}%</span>
+          <span>${numberFormat.format(segment.value)} &middot; ${percent.toFixed(1)}%</span>
         `;
         bar.appendChild(element);
       });
@@ -879,7 +1259,7 @@
           <div class="legend-swatch" style="background:${slice.color};"></div>
           <div>
             <strong style="display:block;color:var(--fg);font-weight:600;">${slice.label}</strong>
-            <span style="color:var(--fg-muted);font-size:0.85rem;">${numberFormat.format(slice.value)} · ${percent}% of net</span>
+            <span style="color:var(--fg-muted);font-size:0.85rem;">${numberFormat.format(slice.value)} &middot; ${percent}% of net</span>
           </div>
         `;
         legend.appendChild(item);
@@ -895,8 +1275,8 @@
       document.querySelector('[data-summary="employerRate"]').textContent = percentFormat.format(values.employerRate / 100);
       document.querySelector('[data-summary="employeeSS"]').textContent = numberFormat.format(values.employeeSS);
       document.querySelector('[data-summary="employeeRate"]').textContent = percentFormat.format(values.employeeRate / 100);
-      document.querySelector('[data-summary="irpf"]').textContent = numberFormat.format(values.irpf);
-      document.querySelector('[data-summary="irpfEffective"]').textContent = values.grossSalary > 0 ? percentFormat.format(values.irpf / values.grossSalary) + " of gross" : "—";
+      document.querySelector('[data-summary="incomeTax"]').textContent = numberFormat.format(values.incomeTax);
+      document.querySelector('[data-summary="incomeTaxEffective"]').textContent = values.grossSalary > 0 ? percentFormat.format(values.incomeTax / values.grossSalary) + " of gross" : "—";
       document.querySelector('[data-summary="net"]').textContent = numberFormat.format(values.netSalary);
       document.querySelector('[data-summary="netShare"]').textContent = values.companyCost > 0 ? percentFormat.format(values.netSalary / values.companyCost) + " of CTC" : "—";
       document.querySelector('[data-summary="indirectTotal"]').textContent = numberFormat.format(values.indirectTaxes);
@@ -909,7 +1289,10 @@
 
     function safeNumber(input) {
       const value = parseFloat(input.value);
-      return Number.isNaN(value) || value < 0 ? 0 : value;
+      if (Number.isNaN(value) || value < 0) {
+        return 0;
+      }
+      return value;
     }
 
     function compute() {
@@ -923,18 +1306,18 @@
       const employerSS = grossSalary * (employerRate / 100);
       const employeeSS = grossSalary * (employeeRate / 100);
       const taxableBase = Math.max(0, grossSalary - personalAllowance);
-      const { total: irpfTotal, breakdown } = calculateIRPF(taxableBase);
-      const netSalary = Math.max(0, grossSalary - employeeSS - irpfTotal);
+      const { total: incomeTaxTotal, breakdown, sorted } = calculateIncomeTax(taxableBase);
+      const netSalary = Math.max(0, grossSalary - employeeSS - incomeTaxTotal);
       const vatAmount = Math.max(0, netSalary * (vatRate / 100));
       const otherIndirect = Math.max(0, netSalary * (indirectRate / 100));
       const disposableIncome = Math.max(0, netSalary - vatAmount - otherIndirect);
       const companyCost = grossSalary + employerSS;
       const indirectTaxes = vatAmount + otherIndirect;
-      const totalTaxes = employerSS + employeeSS + irpfTotal + indirectTaxes;
+      const totalTaxes = employerSS + employeeSS + incomeTaxTotal + indirectTaxes;
 
-      renderIrpfChart(breakdown, taxableBase);
+      renderIncomeTaxChart(breakdown, taxableBase, sorted);
       renderCompanyBar(companyCost, employerSS, grossSalary);
-      renderGrossToNetBar(grossSalary, employeeSS, irpfTotal, netSalary);
+      renderGrossToNetBar(grossSalary, employeeSS, incomeTaxTotal, netSalary);
       renderPieChart(vatAmount, otherIndirect, disposableIncome);
       updateSummary({
         companyCost,
@@ -943,7 +1326,7 @@
         employerRate,
         employeeSS,
         employeeRate,
-        irpf: irpfTotal,
+        incomeTax: incomeTaxTotal,
         netSalary,
         indirectTaxes,
         disposableIncome,
@@ -955,6 +1338,7 @@
       input.addEventListener("input", compute);
     });
 
+    renderTaxBracketTable();
     compute();
   </script>
 </body>
