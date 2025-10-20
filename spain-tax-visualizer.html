@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spain Tax Visualizer — Interactive</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f172a;
+      --bg-alt: #172847;
+      --fg: #e2e8f0;
+      --fg-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-strong: #0ea5e9;
+      --danger: #f97316;
+      --safe: #4ade80;
+      --neutral: #6366f1;
+      --border: #1e293b;
+      --card-radius: 18px;
+      --shadow: 0 22px 45px rgba(15, 23, 42, 0.55);
+      --font-stack: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-stack);
+      background: radial-gradient(circle at top, #16213c 0%, var(--bg) 45%);
+      color: var(--fg);
+      line-height: 1.55;
+      min-height: 100vh;
+      padding: 32px 16px 64px;
+      display: flex;
+      justify-content: center;
+    }
+
+    main {
+      width: min(1140px, 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .panel {
+      background: linear-gradient(160deg, rgba(24, 35, 66, 0.85) 0%, rgba(11, 18, 35, 0.95) 60%);
+      border: 1px solid rgba(148, 163, 184, 0.08);
+      border-radius: var(--card-radius);
+      box-shadow: var(--shadow);
+      padding: 28px clamp(20px, 4vw, 32px);
+      backdrop-filter: blur(12px);
+    }
+
+    h1 {
+      font-size: clamp(2.1rem, 4vw, 3rem);
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: clamp(1.3rem, 3.2vw, 2.1rem);
+      margin: 0 0 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    p {
+      margin: 0;
+      color: var(--fg-muted);
+    }
+
+    /* Tooltip */
+    #tooltip {
+      position: fixed;
+      pointer-events: none;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--fg);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      line-height: 1.35;
+      max-width: min(320px, 80vw);
+      box-shadow: 0 18px 35px rgba(2, 12, 27, 0.55);
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.12s ease, transform 0.12s ease;
+      z-index: 9999;
+    }
+
+    #tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #tooltip strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    #tooltip em {
+      color: var(--fg-muted);
+      display: block;
+      margin-top: 4px;
+    }
+
+    /* Inputs */
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px clamp(12px, 3vw, 24px);
+    }
+
+    .input-item label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
+      color: var(--fg);
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+
+    .input-item input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 12px;
+      color: var(--fg);
+      padding: 12px 14px;
+      font-size: 1rem;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .input-item input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.3);
+    }
+
+    .section-title {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .section-title span {
+      color: var(--fg-muted);
+      font-size: 0.9rem;
+    }
+
+    /* IRPF chart */
+    .chart-card {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    #irpf-chart {
+      width: 100%;
+      height: clamp(220px, 32vw, 320px);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(6px);
+    }
+
+    .chart-caption {
+      color: var(--fg-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Stacked bars */
+    .stacked-container {
+      display: grid;
+      gap: 22px;
+    }
+
+    .stacked-bar {
+      display: flex;
+      width: 100%;
+      min-height: 64px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .stacked-segment {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      color: #0b1223;
+      gap: 4px;
+    }
+
+    .stacked-segment strong {
+      font-weight: 600;
+      color: #0b1223;
+    }
+
+    .stacked-segment span {
+      font-size: 0.8rem;
+      color: rgba(11, 18, 35, 0.85);
+    }
+
+    /* Pie chart */
+    .pie-container {
+      display: grid;
+      gap: 18px;
+      align-items: center;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    #after-tax-pie {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-width: 320px;
+      justify-self: center;
+    }
+
+    .legend {
+      display: grid;
+      gap: 12px;
+      font-size: 0.95rem;
+    }
+
+    .legend-item {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 12px;
+      padding: 12px 16px;
+    }
+
+    .legend-swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+    }
+
+    /* Summary */
+    .summary-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    .summary-item {
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .summary-item h3 {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--fg-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .summary-value {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-top: 6px;
+      color: var(--accent);
+    }
+
+    .summary-sub {
+      font-size: 0.85rem;
+      color: var(--fg-muted);
+      margin-top: 6px;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--fg-muted);
+      padding-top: 12px;
+    }
+
+    footer span {
+      color: var(--fg);
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 720px) {
+      body {
+        padding-top: 24px;
+      }
+
+      .stacked-segment {
+        padding: 10px;
+        font-size: 0.9rem;
+      }
+
+      .stacked-segment span {
+        font-size: 0.76rem;
+      }
+
+      .pie-container {
+        grid-template-columns: 1fr;
+        justify-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="tooltip" role="tooltip" aria-hidden="true"></div>
+  <main>
+    <section class="panel">
+      <h1>Spain Tax Visualizer — Interactive</h1>
+      <p>
+        Adjust the sliders to explore how salary, social security, income tax (IRPF), and indirect taxes affect take-home pay for software engineers working in Spain.
+      </p>
+    </section>
+
+    <section class="panel">
+      <div class="section-title">
+        <h2>Inputs</h2>
+        <span>Customize your scenario</span>
+      </div>
+      <div class="input-grid">
+        <div class="input-item">
+          <label for="grossSalary" class="tooltip-source" tabindex="0"
+                 data-tooltip-en="Gross salary: total annual earnings before deductions."
+                 data-tooltip-es="Salario bruto: ingresos anuales antes de deducciones.">
+            Gross salary (€)
+          </label>
+          <input type="number" id="grossSalary" min="0" step="100" value="45000">
+        </div>
+        <div class="input-item">
+          <label for="employerSs" class="tooltip-source" tabindex="0"
+                 data-tooltip-en="Employer social security: contribution paid by the company on top of gross salary."
+                 data-tooltip-es="Seguridad Social del empleador: aportación que paga la empresa sobre el salario bruto.">
+            Employer Social Security (% of gross)
+          </label>
+          <input type="number" id="employerSs" min="0" step="0.01" value="30.57">
+        </div>
+        <div class="input-item">
+          <label for="employeeSs" class="tooltip-source" tabindex="0"
+                 data-tooltip-en="Employee social security: part of the salary withheld for healthcare and pension."
+                 data-tooltip-es="Seguridad Social del empleado: parte del salario retenida para sanidad y pensión.">
+            Employee Social Security (% of gross)
+          </label>
+          <input type="number" id="employeeSs" min="0" step="0.01" value="6.48">
+        </div>
+        <div class="input-item">
+          <label for="personalAllowance" class="tooltip-source" tabindex="0"
+                 data-tooltip-en="Personal allowance: amount exempt from IRPF due to personal circumstances."
+                 data-tooltip-es="Mínimo personal: importe exento de IRPF por circunstancias personales.">
+            Personal allowance (€/year)
+          </label>
+          <input type="number" id="personalAllowance" min="0" step="50" value="5550">
+        </div>
+        <div class="input-item">
+          <label for="vatRate" class="tooltip-source" tabindex="0"
+                 data-tooltip-en="VAT share: average portion of net salary spent on value-added tax."
+                 data-tooltip-es="Peso del IVA: parte media del salario neto destinada al impuesto sobre el valor añadido.">
+            VAT as % of net
+          </label>
+          <input type="number" id="vatRate" min="0" step="0.1" value="10.7">
+        </div>
+        <div class="input-item">
+          <label for="indirectRate" class="tooltip-source" tabindex="0"
+                 data-tooltip-en="Other indirect taxes: fuel, electricity, or special taxes borne after net salary."
+                 data-tooltip-es="Otros impuestos indirectos: gravámenes sobre combustible, electricidad o especiales tras recibir el neto.">
+            Other indirect taxes as % of net
+          </label>
+          <input type="number" id="indirectRate" min="0" step="0.1" value="1.5">
+        </div>
+      </div>
+    </section>
+
+    <section class="panel chart-card">
+      <div class="section-title">
+        <h2>IRPF Brackets</h2>
+        <span>Combined national + regional rates (2025)</span>
+      </div>
+      <svg id="irpf-chart" viewBox="0 0 100 60" role="img" aria-label="IRPF progressive brackets for Spain"></svg>
+      <div class="chart-caption">
+        Each bar shows the marginal rate for that bracket. Highlighted bars indicate the portion of your taxable base that falls into the bracket.
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-title">
+        <h2>Salary Journey</h2>
+        <span>Track money from employer to disposable income</span>
+      </div>
+      <div class="stacked-container">
+        <div>
+          <h3 style="margin:0 0 8px;font-weight:500;color:var(--fg-muted);letter-spacing:0.06em;text-transform:uppercase;">From company cost to employee gross</h3>
+          <div class="stacked-bar" id="company-cost-bar" aria-label="Composition of company total cost"></div>
+        </div>
+        <div>
+          <h3 style="margin:0 0 8px;font-weight:500;color:var(--fg-muted);letter-spacing:0.06em;text-transform:uppercase;">From gross salary to net salary</h3>
+          <div class="stacked-bar" id="gross-to-net-bar" aria-label="Deductions from gross salary"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-title">
+        <h2>After-Net: Indirect Taxes</h2>
+        <span>Where net salary goes when you spend</span>
+      </div>
+      <div class="pie-container">
+        <svg id="after-tax-pie" viewBox="0 0 200 200" role="img" aria-label="Indirect tax breakdown of net salary"></svg>
+        <div class="legend" id="pie-legend"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-title">
+        <h2>Summary</h2>
+        <span>Key figures and effective rates</span>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <h3>Company total cost</h3>
+          <div class="summary-value" data-summary="companyCost"></div>
+          <div class="summary-sub" data-summary="companyCostShare"></div>
+        </div>
+        <div class="summary-item">
+          <h3>Gross salary</h3>
+          <div class="summary-value" data-summary="grossSalary"></div>
+          <div class="summary-sub" data-summary="grossShare"></div>
+        </div>
+        <div class="summary-item">
+          <h3>Employer SS</h3>
+          <div class="summary-value" data-summary="employerSS"></div>
+          <div class="summary-sub" data-summary="employerRate"></div>
+        </div>
+        <div class="summary-item">
+          <h3>Employee SS</h3>
+          <div class="summary-value" data-summary="employeeSS"></div>
+          <div class="summary-sub" data-summary="employeeRate"></div>
+        </div>
+        <div class="summary-item">
+          <h3>IRPF paid</h3>
+          <div class="summary-value" data-summary="irpf"></div>
+          <div class="summary-sub" data-summary="irpfEffective"></div>
+        </div>
+        <div class="summary-item">
+          <h3>Net salary</h3>
+          <div class="summary-value" data-summary="net"></div>
+          <div class="summary-sub" data-summary="netShare"></div>
+        </div>
+        <div class="summary-item">
+          <h3>Indirect taxes</h3>
+          <div class="summary-value" data-summary="indirectTotal"></div>
+          <div class="summary-sub" data-summary="indirectShare"></div>
+        </div>
+        <div class="summary-item">
+          <h3>Disposable income</h3>
+          <div class="summary-value" data-summary="disposable"></div>
+          <div class="summary-sub" data-summary="disposableShare"></div>
+        </div>
+        <div class="summary-item">
+          <h3>Effective tax rate</h3>
+          <div class="summary-value" data-summary="effectiveGross"></div>
+          <div class="summary-sub" data-summary="effectiveCTC"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="panel">
+      Sources: Glassdoor (average salary Spain, 2025); PwC Tax Summaries (Social Security, VAT); Playroll (IRPF 2025); Eurostat (indirect tax share).
+    </footer>
+  </main>
+
+  <script>
+
+    const numberFormat = new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "EUR",
+      maximumFractionDigits: 0
+    });
+
+    const percentFormat = new Intl.NumberFormat("en-GB", {
+      style: "percent",
+      maximumFractionDigits: 1
+    });
+
+    const tooltipEl = document.getElementById("tooltip");
+    let activeTooltipSource = null;
+
+    function showTooltip(target) {
+      const en = target.getAttribute("data-tooltip-en");
+      const es = target.getAttribute("data-tooltip-es");
+      if (!en || !es) {
+        return;
+      }
+      tooltipEl.innerHTML = "<strong>" + en + "</strong><em>" + es + "</em>";
+      tooltipEl.classList.add("visible");
+      tooltipEl.setAttribute("aria-hidden", "false");
+      activeTooltipSource = target;
+    }
+
+    function hideTooltip() {
+      tooltipEl.classList.remove("visible");
+      tooltipEl.setAttribute("aria-hidden", "true");
+      activeTooltipSource = null;
+    }
+
+    document.addEventListener("pointermove", (event) => {
+      if (!tooltipEl.classList.contains("visible")) {
+        return;
+      }
+      const offset = 18;
+      tooltipEl.style.left = event.clientX + offset + "px";
+      tooltipEl.style.top = event.clientY + offset + "px";
+    });
+
+    document.addEventListener("mouseenter", (event) => {
+      const source = event.target.closest && event.target.closest("[data-tooltip-en]");
+      if (!source) {
+        return;
+      }
+      showTooltip(source);
+    }, true);
+
+    document.addEventListener("mouseleave", (event) => {
+      if (!event.target.closest || !event.target.closest("[data-tooltip-en]")) {
+        return;
+      }
+      hideTooltip();
+    }, true);
+
+    document.addEventListener("focusin", (event) => {
+      const source = event.target.closest && event.target.closest("[data-tooltip-en]");
+      if (!source) {
+        return;
+      }
+      showTooltip(source);
+      const rect = source.getBoundingClientRect();
+      tooltipEl.style.left = rect.left + rect.width + 12 + "px";
+      tooltipEl.style.top = rect.top + window.scrollY + "px";
+    });
+
+    document.addEventListener("focusout", (event) => {
+      const next = event.relatedTarget;
+      if (next && next.closest && next.closest("[data-tooltip-en]")) {
+        return;
+      }
+      hideTooltip();
+    });
+
+    const inputs = {
+      gross: document.getElementById("grossSalary"),
+      employer: document.getElementById("employerSs"),
+      employee: document.getElementById("employeeSs"),
+      allowance: document.getElementById("personalAllowance"),
+      vat: document.getElementById("vatRate"),
+      indirect: document.getElementById("indirectRate")
+    };
+
+    const irpfBrackets = [
+      { start: 0, end: 12450, rate: 0.19, label: "0 – €12,450", labelEs: "0 – 12.450 €" },
+      { start: 12450, end: 20200, rate: 0.24, label: "€12,450 – €20,200", labelEs: "12.450 – 20.200 €" },
+      { start: 20200, end: 35200, rate: 0.30, label: "€20,200 – €35,200", labelEs: "20.200 – 35.200 €" },
+      { start: 35200, end: 60000, rate: 0.37, label: "€35,200 – €60,000", labelEs: "35.200 – 60.000 €" },
+      { start: 60000, end: 300000, rate: 0.45, label: "€60,000 – €300,000", labelEs: "60.000 – 300.000 €" },
+      { start: 300000, end: Infinity, rate: 0.47, label: "> €300,000", labelEs: "> 300.000 €" }
+    ];
+
+    function calculateIRPF(taxableBase) {
+      let remaining = taxableBase;
+      const breakdown = irpfBrackets.map((bracket) => {
+        const span = bracket.end === Infinity ? Math.max(remaining, 0) : Math.max(bracket.end - bracket.start, 0);
+        const taxableAmount = Math.max(0, Math.min(remaining, span));
+        const taxAmount = taxableAmount * bracket.rate;
+        remaining = Math.max(0, remaining - taxableAmount);
+        return { ...bracket, taxableAmount, taxAmount };
+      });
+      const total = breakdown.reduce((sum, item) => sum + item.taxAmount, 0);
+      return { total, breakdown };
+    }
+
+    function renderIrpfChart(breakdown, taxableBase) {
+      const svg = document.getElementById("irpf-chart");
+      while (svg.firstChild) {
+        svg.removeChild(svg.firstChild);
+      }
+
+      const baseline = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      baseline.setAttribute("x1", "0");
+      baseline.setAttribute("x2", "100");
+      baseline.setAttribute("y1", "55");
+      baseline.setAttribute("y2", "55");
+      baseline.setAttribute("stroke", "rgba(148, 163, 184, 0.25)");
+      baseline.setAttribute("stroke-width", "0.6");
+      svg.appendChild(baseline);
+
+      const maxRate = Math.max(...irpfBrackets.map((item) => item.rate));
+      const displayCap = 350000;
+      const minimumShare = 0.08;
+
+      const rawWidths = irpfBrackets.map((bracket) => {
+        if (bracket.end === Infinity) {
+          return displayCap * 0.2;
+        }
+        return Math.max(bracket.end - bracket.start, 1);
+      });
+
+      const adjusted = rawWidths.map((value) => Math.max(value, displayCap * minimumShare));
+      const totalWidth = adjusted.reduce((acc, value) => acc + value, 0);
+      const widths = adjusted.map((value) => (value / totalWidth) * 100);
+
+      let cursor = 0;
+
+      breakdown.forEach((item, index) => {
+        const width = widths[index] || (100 / breakdown.length);
+        const barHeight = (item.rate / maxRate) * 46;
+        const fill = item.taxableAmount > 0 ? "#38bdf8" : "rgba(56, 189, 248, 0.3)";
+
+        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        group.setAttribute("tabindex", "0");
+        group.setAttribute("data-tooltip-en", item.label + " taxed at " + Math.round(item.rate * 100) + "%.");
+        group.setAttribute("data-tooltip-es", item.labelEs + " gravado al " + Math.round(item.rate * 100) + " %.");
+
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("x", cursor.toFixed(2));
+        rect.setAttribute("y", (55 - barHeight).toFixed(2));
+        rect.setAttribute("width", width.toFixed(2));
+        rect.setAttribute("height", barHeight.toFixed(2));
+        rect.setAttribute("rx", "2");
+        rect.setAttribute("fill", fill);
+        group.appendChild(rect);
+
+        const span = item.end === Infinity ? Math.max(taxableBase - item.start, 0) : Math.max(item.end - item.start, 1);
+        const coverage = span > 0 ? Math.min(item.taxableAmount / span, 1) : 0;
+        if (coverage > 0) {
+          const highlight = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          const highlightHeight = barHeight * coverage;
+          highlight.setAttribute("x", cursor.toFixed(2));
+          highlight.setAttribute("y", (55 - highlightHeight).toFixed(2));
+          highlight.setAttribute("width", width.toFixed(2));
+          highlight.setAttribute("height", highlightHeight.toFixed(2));
+          highlight.setAttribute("fill", "rgba(14, 165, 233, 0.4)");
+          group.appendChild(highlight);
+        }
+
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", (cursor + width / 2).toFixed(2));
+        text.setAttribute("y", "59");
+        text.setAttribute("fill", "#cbd5f5");
+        text.setAttribute("font-size", "3.3");
+        text.setAttribute("text-anchor", "middle");
+        text.textContent = Math.round(item.rate * 100) + "%";
+        group.appendChild(text);
+
+        svg.appendChild(group);
+        cursor += width;
+      });
+    }
+
+    function renderCompanyBar(companyCost, employerSS, grossSalary) {
+      const bar = document.getElementById("company-cost-bar");
+      bar.innerHTML = "";
+      const segments = [
+        {
+          label: "Employer SS",
+          value: employerSS,
+          color: "linear-gradient(135deg, #f97316 0%, #fb923c 95%)",
+          tooltipEn: "Company total cost (CTC): total expense for the employer including social security.",
+          tooltipEs: "Coste total empresa (CTC): gasto total para el empleador incluyendo cotización patronal."
+        },
+        {
+          label: "Gross salary",
+          value: grossSalary,
+          color: "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 95%)",
+          tooltipEn: "Gross salary: amount before employee contributions and taxes.",
+          tooltipEs: "Salario bruto: importe antes de cotizaciones y retenciones del empleado."
+        }
+      ];
+
+      const total = companyCost || 1;
+
+      segments.forEach((segment) => {
+        const percent = total ? (segment.value / total) * 100 : 0;
+        const element = document.createElement("div");
+        element.className = "stacked-segment tooltip-source";
+        element.tabIndex = 0;
+        element.style.flexGrow = String(segment.value || 0.0001);
+        element.style.flexBasis = "0";
+        element.style.background = segment.color;
+        element.setAttribute("data-tooltip-en", segment.tooltipEn);
+        element.setAttribute("data-tooltip-es", segment.tooltipEs);
+        element.innerHTML = `
+          <strong>${segment.label}</strong>
+          <span>${numberFormat.format(segment.value)} · ${percent.toFixed(1)}%</span>
+        `;
+        bar.appendChild(element);
+      });
+    }
+
+    function renderGrossToNetBar(gross, employeeSS, irpf, net) {
+      const bar = document.getElementById("gross-to-net-bar");
+      bar.innerHTML = "";
+      const segments = [
+        {
+          label: "Employee SS",
+          value: employeeSS,
+          color: "linear-gradient(135deg, #6366f1 0%, #818cf8 95%)",
+          tooltipEn: "Employee SS: contribution for healthcare and pension.",
+          tooltipEs: "Seguridad Social del empleado: contribución a sanidad y pensiones."
+        },
+        {
+          label: "IRPF",
+          value: irpf,
+          color: "linear-gradient(135deg, #f43f5e 0%, #fb7185 95%)",
+          tooltipEn: "IRPF: personal income tax withheld by the employer.",
+          tooltipEs: "IRPF: impuesto sobre la renta retenido por la empresa."
+        },
+        {
+          label: "Net salary",
+          value: net,
+          color: "linear-gradient(135deg, #4ade80 0%, #22c55e 95%)",
+          tooltipEn: "Net salary: the amount you receive after withholdings.",
+          tooltipEs: "Salario neto: cantidad que recibes tras las retenciones."
+        }
+      ];
+
+      const total = gross || 1;
+
+      segments.forEach((segment) => {
+        const percent = total ? (segment.value / total) * 100 : 0;
+        const element = document.createElement("div");
+        element.className = "stacked-segment tooltip-source";
+        element.tabIndex = 0;
+        element.style.flexGrow = String(segment.value || 0.0001);
+        element.style.flexBasis = "0";
+        element.style.background = segment.color;
+        element.setAttribute("data-tooltip-en", segment.tooltipEn);
+        element.setAttribute("data-tooltip-es", segment.tooltipEs);
+        element.innerHTML = `
+          <strong>${segment.label}</strong>
+          <span>${numberFormat.format(segment.value)} · ${percent.toFixed(1)}%</span>
+        `;
+        bar.appendChild(element);
+      });
+    }
+
+    function polarToCartesian(cx, cy, radius, angleInDegrees) {
+      const angleInRadians = (angleInDegrees - 90) * Math.PI / 180;
+      return {
+        x: cx + radius * Math.cos(angleInRadians),
+        y: cy + radius * Math.sin(angleInRadians)
+      };
+    }
+
+    function describeArc(x, y, radius, startAngle, endAngle) {
+      const start = polarToCartesian(x, y, radius, endAngle);
+      const end = polarToCartesian(x, y, radius, startAngle);
+      const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+      return [
+        "M", start.x, start.y,
+        "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y,
+        "L", x, y,
+        "Z"
+      ].join(" ");
+    }
+
+    function renderPieChart(vatAmount, otherAmount, disposable) {
+      const svg = document.getElementById("after-tax-pie");
+      while (svg.firstChild) {
+        svg.removeChild(svg.firstChild);
+      }
+
+      const total = vatAmount + otherAmount + disposable;
+      const slices = [
+        {
+          label: "VAT",
+          value: vatAmount,
+          color: "#facc15",
+          tooltipEn: "VAT: value-added tax paid on most purchases.",
+          tooltipEs: "IVA: impuesto sobre el valor añadido."
+        },
+        {
+          label: "Other indirect taxes",
+          value: otherAmount,
+          color: "#f97316",
+          tooltipEn: "Other indirect taxes: fuel, tobacco, or electricity taxes.",
+          tooltipEs: "Otros impuestos indirectos: combustibles, tabaco, electricidad…"
+        },
+        {
+          label: "Real disposable income",
+          value: disposable,
+          color: "#22c55e",
+          tooltipEn: "Disposable income: net salary after your indirect tax burden.",
+          tooltipEs: "Renta disponible: salario neto tras soportar los impuestos indirectos."
+        }
+      ];
+
+      if (total <= 0) {
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", "100");
+        circle.setAttribute("cy", "100");
+        circle.setAttribute("r", "82");
+        circle.setAttribute("fill", "rgba(148, 163, 184, 0.15)");
+        circle.setAttribute("data-tooltip-en", "No net salary: there is nothing to split into taxes or spending.");
+        circle.setAttribute("data-tooltip-es", "Sin salario neto: no hay nada que repartir entre impuestos o gasto.");
+        circle.setAttribute("tabindex", "0");
+        svg.appendChild(circle);
+      } else {
+        let startAngle = 0;
+        slices.forEach((slice) => {
+          if (slice.value <= 0) {
+            return;
+          }
+          const angle = (slice.value / total) * 360;
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", describeArc(100, 100, 82, startAngle, startAngle + angle));
+          path.setAttribute("fill", slice.color);
+          path.setAttribute("data-tooltip-en", slice.tooltipEn);
+          path.setAttribute("data-tooltip-es", slice.tooltipEs);
+          path.setAttribute("tabindex", "0");
+          svg.appendChild(path);
+          startAngle += angle;
+        });
+      }
+
+      const center = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      center.setAttribute("cx", "100");
+      center.setAttribute("cy", "100");
+      center.setAttribute("r", "50");
+      center.setAttribute("fill", "rgba(15, 23, 42, 0.92)");
+      svg.appendChild(center);
+
+      const title = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      title.setAttribute("x", "100");
+      title.setAttribute("y", "96");
+      title.setAttribute("fill", "#cbd5f5");
+      title.setAttribute("font-size", "10");
+      title.setAttribute("text-anchor", "middle");
+      title.textContent = "Post-tax";
+      svg.appendChild(title);
+
+      const amount = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      amount.setAttribute("x", "100");
+      amount.setAttribute("y", "114");
+      amount.setAttribute("fill", "#38bdf8");
+      amount.setAttribute("font-size", "12");
+      amount.setAttribute("text-anchor", "middle");
+      amount.textContent = total > 0 ? numberFormat.format(disposable) : "€0";
+      svg.appendChild(amount);
+
+      renderPieLegend(slices, total);
+    }
+
+    function renderPieLegend(slices, total) {
+      const legend = document.getElementById("pie-legend");
+      legend.innerHTML = "";
+      slices.forEach((slice) => {
+        const item = document.createElement("div");
+        item.className = "legend-item tooltip-source";
+        item.tabIndex = 0;
+        item.setAttribute("data-tooltip-en", slice.tooltipEn);
+        item.setAttribute("data-tooltip-es", slice.tooltipEs);
+        const percent = total > 0 ? ((slice.value / total) * 100).toFixed(1) : "0.0";
+        item.innerHTML = `
+          <div class="legend-swatch" style="background:${slice.color};"></div>
+          <div>
+            <strong style="display:block;color:var(--fg);font-weight:600;">${slice.label}</strong>
+            <span style="color:var(--fg-muted);font-size:0.85rem;">${numberFormat.format(slice.value)} · ${percent}% of net</span>
+          </div>
+        `;
+        legend.appendChild(item);
+      });
+    }
+
+    function updateSummary(values) {
+      document.querySelector('[data-summary="companyCost"]').textContent = numberFormat.format(values.companyCost);
+      document.querySelector('[data-summary="companyCostShare"]').textContent = values.companyCost > 0 ? percentFormat.format(values.employerSS / values.companyCost) + " employer SS of CTC" : "—";
+      document.querySelector('[data-summary="grossSalary"]').textContent = numberFormat.format(values.grossSalary);
+      document.querySelector('[data-summary="grossShare"]').textContent = values.companyCost > 0 ? percentFormat.format(values.grossSalary / values.companyCost) + " of CTC" : "—";
+      document.querySelector('[data-summary="employerSS"]').textContent = numberFormat.format(values.employerSS);
+      document.querySelector('[data-summary="employerRate"]').textContent = percentFormat.format(values.employerRate / 100);
+      document.querySelector('[data-summary="employeeSS"]').textContent = numberFormat.format(values.employeeSS);
+      document.querySelector('[data-summary="employeeRate"]').textContent = percentFormat.format(values.employeeRate / 100);
+      document.querySelector('[data-summary="irpf"]').textContent = numberFormat.format(values.irpf);
+      document.querySelector('[data-summary="irpfEffective"]').textContent = values.grossSalary > 0 ? percentFormat.format(values.irpf / values.grossSalary) + " of gross" : "—";
+      document.querySelector('[data-summary="net"]').textContent = numberFormat.format(values.netSalary);
+      document.querySelector('[data-summary="netShare"]').textContent = values.companyCost > 0 ? percentFormat.format(values.netSalary / values.companyCost) + " of CTC" : "—";
+      document.querySelector('[data-summary="indirectTotal"]').textContent = numberFormat.format(values.indirectTaxes);
+      document.querySelector('[data-summary="indirectShare"]').textContent = values.netSalary > 0 ? percentFormat.format(values.indirectTaxes / values.netSalary) + " of net" : "—";
+      document.querySelector('[data-summary="disposable"]').textContent = numberFormat.format(values.disposableIncome);
+      document.querySelector('[data-summary="disposableShare"]').textContent = values.netSalary > 0 ? percentFormat.format(values.disposableIncome / values.netSalary) + " of net" : "—";
+      document.querySelector('[data-summary="effectiveGross"]').textContent = values.grossSalary > 0 ? percentFormat.format(values.totalTaxes / values.grossSalary) + " of gross" : "—";
+      document.querySelector('[data-summary="effectiveCTC"]').textContent = values.companyCost > 0 ? percentFormat.format(values.totalTaxes / values.companyCost) + " of CTC" : "—";
+    }
+
+    function safeNumber(input) {
+      const value = parseFloat(input.value);
+      return Number.isNaN(value) || value < 0 ? 0 : value;
+    }
+
+    function compute() {
+      const grossSalary = safeNumber(inputs.gross);
+      const employerRate = safeNumber(inputs.employer);
+      const employeeRate = safeNumber(inputs.employee);
+      const personalAllowance = safeNumber(inputs.allowance);
+      const vatRate = safeNumber(inputs.vat);
+      const indirectRate = safeNumber(inputs.indirect);
+
+      const employerSS = grossSalary * (employerRate / 100);
+      const employeeSS = grossSalary * (employeeRate / 100);
+      const taxableBase = Math.max(0, grossSalary - personalAllowance);
+      const { total: irpfTotal, breakdown } = calculateIRPF(taxableBase);
+      const netSalary = Math.max(0, grossSalary - employeeSS - irpfTotal);
+      const vatAmount = Math.max(0, netSalary * (vatRate / 100));
+      const otherIndirect = Math.max(0, netSalary * (indirectRate / 100));
+      const disposableIncome = Math.max(0, netSalary - vatAmount - otherIndirect);
+      const companyCost = grossSalary + employerSS;
+      const indirectTaxes = vatAmount + otherIndirect;
+      const totalTaxes = employerSS + employeeSS + irpfTotal + indirectTaxes;
+
+      renderIrpfChart(breakdown, taxableBase);
+      renderCompanyBar(companyCost, employerSS, grossSalary);
+      renderGrossToNetBar(grossSalary, employeeSS, irpfTotal, netSalary);
+      renderPieChart(vatAmount, otherIndirect, disposableIncome);
+      updateSummary({
+        companyCost,
+        grossSalary,
+        employerSS,
+        employerRate,
+        employeeSS,
+        employeeRate,
+        irpf: irpfTotal,
+        netSalary,
+        indirectTaxes,
+        disposableIncome,
+        totalTaxes
+      });
+    }
+
+    Object.values(inputs).forEach((input) => {
+      input.addEventListener("input", compute);
+    });
+
+    compute();
+  </script>
+</body>
+</html>
