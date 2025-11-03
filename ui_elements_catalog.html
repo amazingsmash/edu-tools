@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web UI Elements Catalog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        nav {
+            background: #f8f9fa;
+            padding: 0;
+            display: flex;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .nav-btn {
+            flex: 1;
+            padding: 20px;
+            background: transparent;
+            border: none;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .nav-btn:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+        
+        .nav-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #f8f9fa;
+        }
+        
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .element-name {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .tag-code {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #d63384;
+        }
+        
+        .element-preview {
+            min-width: 150px;
+        }
+        
+        .info-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+        
+        .info-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 15% auto;
+            padding: 0;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            animation: slideDown 0.3s;
+            overflow: hidden;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            font-size: 1.8em;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .modal-description {
+            line-height: 1.8;
+            color: #495057;
+            font-size: 1.1em;
+        }
+        
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: white;
+            transform: scale(1.05);
+        }
+
+        .ui-accordion {
+            width: 200px;
+            font-size: 0.9em;
+        }
+        
+        .ui-slider {
+            width: 150px;
+            margin: 10px 0;
+        }
+        
+        .ui-progressbar {
+            width: 150px;
+        }
+        
+        .ui-spinner {
+            width: 100px;
+        }
+        
+        .ui-tabs {
+            width: 200px;
+            font-size: 0.8em;
+        }
+        
+        .draggable-demo, .sortable-demo {
+            padding: 8px;
+            background: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            cursor: move;
+            display: inline-block;
+        }
+        
+        .resizable-demo {
+            width: 100px;
+            height: 50px;
+            background: #e9ecef;
+            border: 2px dashed #667eea;
+            border-radius: 4px;
+        }
+        
+        .quiz-section {
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .quiz-title {
+            font-size: 2em;
+            color: #495057;
+            margin-bottom: 20px;
+        }
+        
+        .score-board {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .score-item {
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .score-correct {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .score-incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .question-card {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .question-text {
+            font-size: 1.4em;
+            color: #495057;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .element-display {
+            background: #f8f9fa;
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
+            margin: 30px 0;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .option-btn {
+            padding: 20px;
+            border: 2px solid #dee2e6;
+            background: white;
+            border-radius: 12px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .option-btn:hover:not(:disabled) {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.2);
+        }
+        
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .option-btn.correct {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        
+        .option-btn.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .feedback-message {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin: 20px 0;
+            animation: slideIn 0.5s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .feedback-correct {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+        
+        .feedback-incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+        
+        .next-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+        }
+        
+        .quiz-complete {
+            text-align: center;
+            padding: 60px 40px;
+        }
+        
+        .complete-title {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .complete-score {
+            font-size: 3em;
+            font-weight: bold;
+            color: #495057;
+            margin: 30px 0;
+        }
+        
+        .complete-message {
+            font-size: 1.3em;
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .restart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Web UI Elements Catalog</h1>
+            <p class="subtitle">Interactive vocabulary reference for web interface components</p>
+        </header>
+        
+        <nav>
+            <button class="nav-btn active" onclick="showSection('catalog')">📚 Catalog</button>
+            <button class="nav-btn" onclick="showSection('quiz')">🎯 Quiz</button>
+        </nav>
+        
+        <div id="catalogSection" class="section active">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Element Name</th>
+                        <th>HTML/jQuery Tag</th>
+                        <th>Live Preview</th>
+                        <th>Info</th>
+                    </tr>
+                </thead>
+                <tbody id="catalogTable"></tbody>
+            </table>
+        </div>
+        
+        <div id="quizSection" class="section quiz-section">
+            <div class="quiz-header">
+                <h2 class="quiz-title">🎯 UI Elements Quiz</h2>
+                <div class="score-board">
+                    <div class="score-item score-correct">
+                        ✓ Correct: <span id="correctCount">0</span>
+                    </div>
+                    <div class="score-item score-incorrect">
+                        ✗ Incorrect: <span id="incorrectCount">0</span>
+                    </div>
+                </div>
+            </div>
+            <div id="quizContent"></div>
+        </div>
+    </div>
+    
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="modalTitle"></span>
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description" id="modalDescription"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        const elements = [
+            {name: "Button", tag: "&lt;button&gt;", preview: '<button>Click me</button>', description: "A clickable element that executes an action when the user interacts with it."},
+            {name: "Text Input", tag: "&lt;input type='text'&gt;", preview: '<input type="text" placeholder="Enter text">', description: "A single-line field for entering free-form text."},
+            {name: "Checkbox", tag: "&lt;input type='checkbox'&gt;", preview: '<label><input type="checkbox"> Check me</label>', description: "A checkbox for selecting multiple options independently."},
+            {name: "Radio Button", tag: "&lt;input type='radio'&gt;", preview: '<label><input type="radio" name="r1"> Option 1</label> <label><input type="radio" name="r1"> Option 2</label>', description: "A button for selecting a single option from a group."},
+            {name: "Select/Dropdown", tag: "&lt;select&gt;", preview: '<select><option>Option 1</option><option>Option 2</option><option>Option 3</option></select>', description: "A dropdown list where the user selects one option from many."},
+            {name: "Textarea", tag: "&lt;textarea&gt;", preview: '<textarea placeholder="Enter multiple lines" rows="3"></textarea>', description: "A multi-line input field for extended text."},
+            {name: "Label", tag: "&lt;label&gt;", preview: '<label for="demo">Name:</label> <input type="text" id="demo">', description: "A descriptive label associated with a form element."},
+            {name: "Link/Anchor", tag: "&lt;a&gt;", preview: '<a href="#" onclick="return false;">Click this link</a>', description: "A hyperlink that navigates to another page or section."},
+            {name: "Image", tag: "&lt;img&gt;", preview: '<img src="https://via.placeholder.com/80x50" alt="Sample">', description: "An element that displays an image."},
+            {name: "Range Slider", tag: "&lt;input type='range'&gt;", preview: '<input type="range" min="0" max="100" value="50">', description: "A sliding control for selecting a numeric value within a range."},
+            {name: "Date Picker", tag: "&lt;input type='date'&gt;", preview: '<input type="date">', description: "A date selector with native calendar functionality."},
+            {name: "Color Picker", tag: "&lt;input type='color'&gt;", preview: '<input type="color" value="#667eea">', description: "A visual color selector."},
+            {name: "File Upload", tag: "&lt;input type='file'&gt;", preview: '<input type="file">', description: "A button to select and upload files from the device."},
+            {name: "Email Input", tag: "&lt;input type='email'&gt;", preview: '<input type="email" placeholder="user@example.com">', description: "A specific field for email addresses with validation."},
+            {name: "Password Input", tag: "&lt;input type='password'&gt;", preview: '<input type="password" placeholder="Password">', description: "A field that hides entered text for passwords."},
+            {name: "Number Input", tag: "&lt;input type='number'&gt;", preview: '<input type="number" value="5" min="0" max="10">', description: "A numeric field with increment/decrement controls."},
+            {name: "Search Input", tag: "&lt;input type='search'&gt;", preview: '<input type="search" placeholder="Search...">', description: "A field optimized for search queries."},
+            {name: "Progress Bar", tag: "&lt;progress&gt;", preview: '<progress value="70" max="100"></progress>', description: "A bar showing the progress of a task."},
+            {name: "Meter", tag: "&lt;meter&gt;", preview: '<meter value="6" min="0" max="10" low="3" high="7" optimum="8"></meter>', description: "A visual indicator of a measurement within a known range."},
+            {name: "Accordion", tag: "jQuery UI", preview: '<div class="accordion-demo"><div><h3>Section 1</h3><div>Content 1</div></div><div><h3>Section 2</h3><div>Content 2</div></div></div>', description: "A collapsible panel where only one section displays at a time.", jquery: true},
+            {name: "Autocomplete", tag: "jQuery UI", preview: '<input class="autocomplete-demo" placeholder="Type to search...">', description: "A text field that suggests options as you type.", jquery: true},
+            {name: "Datepicker", tag: "jQuery UI", preview: '<input class="datepicker-demo" placeholder="Select date">', description: "An advanced interactive calendar for selecting dates.", jquery: true},
+            {name: "Slider", tag: "jQuery UI", preview: '<div class="slider-demo"></div>', description: "An advanced sliding control with multiple handlers.", jquery: true},
+            {name: "Spinner", tag: "jQuery UI", preview: '<input class="spinner-demo" value="5">', description: "A numeric field with stylized spinner buttons.", jquery: true},
+            {name: "Tabs", tag: "jQuery UI", preview: '<div class="tabs-demo"><ul><li><a href="#tab1">Tab 1</a></li><li><a href="#tab2">Tab 2</a></li></ul><div id="tab1">Content 1</div><div id="tab2">Content 2</div></div>', description: "Tabs that organize content into navigable sections.", jquery: true},
+            {name: "Progressbar", tag: "jQuery UI", preview: '<div class="progressbar-demo"></div>', description: "An animated and customizable progress bar.", jquery: true},
+            {name: "Tooltip", tag: "jQuery UI", preview: '<button class="tooltip-demo" title="This is a tooltip!">Hover me</button>', description: "A small popup with additional information on hover.", jquery: true},
+            {name: "Draggable", tag: "jQuery UI", preview: '<div class="draggable-demo">Drag me</div>', description: "An element that can be dragged with the mouse.", jquery: true},
+            {name: "Resizable", tag: "jQuery UI", preview: '<div class="resizable-demo"></div>', description: "An element whose size can be modified by dragging its edges.", jquery: true},
+            {name: "Sortable", tag: "jQuery UI", preview: '<ul class="sortable-demo" style="list-style:none;padding:0;"><li class="sortable-item" style="padding:8px;background:#e9ecef;margin:4px 0;cursor:move;border-radius:4px;">Item 1</li><li class="sortable-item" style="padding:8px;background:#e9ecef;margin:4px 0;cursor:move;border-radius:4px;">Item 2</li><li class="sortable-item" style="padding:8px;background:#e9ecef;margin:4px 0;cursor:move;border-radius:4px;">Item 3</li></ul>', description: "A list of elements that can be reordered by dragging.", jquery: true}
+        ];
+
+        let quizQuestions = [];
+        let currentQuestionIndex = 0;
+        let correctAnswers = 0;
+        let incorrectAnswers = 0;
+        let hasAnswered = false;
+
+        function showSection(section) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            
+            if (section === 'catalog') {
+                document.getElementById('catalogSection').classList.add('active');
+            } else if (section === 'quiz') {
+                document.getElementById('quizSection').classList.add('active');
+                if (quizQuestions.length === 0) initQuiz();
+            }
+        }
+
+        function initQuiz() {
+            correctAnswers = 0;
+            incorrectAnswers = 0;
+            currentQuestionIndex = 0;
+            hasAnswered = false;
+            updateScores();
+            quizQuestions = [...elements].sort(() => Math.random() - 0.5);
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentQuestionIndex >= quizQuestions.length) {
+                showQuizComplete();
+                return;
+            }
+            
+            hasAnswered = false;
+            const question = quizQuestions[currentQuestionIndex];
+            const wrongAnswers = elements.filter(e => e.name !== question.name).sort(() => Math.random() - 0.5).slice(0, 3).map(e => e.name);
+            const options = [question.name, ...wrongAnswers].sort(() => Math.random() - 0.5);
+            
+            document.getElementById('quizContent').innerHTML = `
+                <div class="question-card">
+                    <div class="question-text">What UI element is this?</div>
+                    <div class="element-display">${question.preview}</div>
+                    <div class="options-grid">
+                        ${options.map(opt => `<button class="option-btn" onclick="checkAnswer('${opt.replace(/'/g, "\\'")}', '${question.name.replace(/'/g, "\\'")}')">${opt}</button>`).join('')}
+                    </div>
+                    <div id="feedbackArea"></div>
+                </div>
+            `;
+            
+            if (question.jquery) setTimeout(initJQueryComponents, 100);
+        }
+
+        function checkAnswer(selected, correct) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+            
+            const isCorrect = selected === correct;
+            const buttons = document.querySelectorAll('.option-btn');
+            const feedbackArea = document.getElementById('feedbackArea');
+            
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent === correct) btn.classList.add('correct');
+                else if (btn.textContent === selected && !isCorrect) btn.classList.add('incorrect');
+            });
+            
+            if (isCorrect) {
+                correctAnswers++;
+                feedbackArea.innerHTML = '<div class="feedback-message feedback-correct">🎉 Excellent! That\'s correct!</div>';
+            } else {
+                incorrectAnswers++;
+                feedbackArea.innerHTML = `<div class="feedback-message feedback-incorrect">❌ Not quite! The correct answer is: ${correct}</div>`;
+            }
+            
+            updateScores();
+            feedbackArea.innerHTML += `<button class="next-btn" onclick="nextQuestion()">${currentQuestionIndex < quizQuestions.length - 1 ? 'Next Question →' : 'See Results →'}</button>`;
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            showQuestion();
+        }
+
+        function updateScores() {
+            document.getElementById('correctCount').textContent = correctAnswers;
+            document.getElementById('incorrectCount').textContent = incorrectAnswers;
+        }
+
+        function showQuizComplete() {
+            const total = quizQuestions.length;
+            const percentage = Math.round((correctAnswers / total) * 100);
+            
+            let message, emoji;
+            if (percentage === 100) {
+                message = 'Perfect Score! You\'re a UI Elements Master! 🏆';
+                emoji = '🌟';
+            } else if (percentage >= 80) {
+                message = 'Excellent work! You really know your UI elements!';
+                emoji = '🎉';
+            } else if (percentage >= 60) {
+                message = 'Good job! Keep practicing to improve!';
+                emoji = '👍';
+            } else {
+                message = 'Keep learning! Review the catalog and try again!';
+                emoji = '📚';
+            }
+            
+            document.getElementById('quizContent').innerHTML = `
+                <div class="quiz-complete">
+                    <div class="complete-title">${emoji} Quiz Complete! ${emoji}</div>
+                    <div class="complete-score">${correctAnswers} / ${total}</div>
+                    <div class="complete-message">${message}</div>
+                    <div class="complete-message">Score: ${percentage}%</div>
+                    <button class="restart-btn" onclick="initQuiz()">🔄 Try Again</button>
+                </div>
+            `;
+        }
+
+        function initJQueryComponents() {
+            $('.accordion-demo').accordion({heightStyle: "content", collapsible: true});
+            $('.autocomplete-demo').autocomplete({source: ['Apple', 'Banana', 'Cherry', 'Date', 'Elderberry']});
+            $('.datepicker-demo').datepicker();
+            $('.slider-demo').slider({value: 50, min: 0, max: 100});
+            $('.spinner-demo').spinner({min: 0, max: 10});
+            $('.tabs-demo').tabs();
+            $('.progressbar-demo').progressbar({value: 65});
+            $('.tooltip-demo').tooltip();
+            $('.draggable-demo').draggable();
+            $('.resizable-demo').resizable();
+            $('.sortable-demo').sortable();
+        }
+
+        function showModal(name, description) {
+            document.getElementById('modalTitle').textContent = name;
+            document.getElementById('modalDescription').textContent = description;
+            document.getElementById('infoModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('infoModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('infoModal')) closeModal();
+        }
+
+        const tableBody = document.getElementById('catalogTable');
+        elements.forEach(el => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="element-name">${el.name}</td>
+                <td><code class="tag-code">${el.tag}</code></td>
+                <td class="element-preview">${el.preview}</td>
+                <td><button class="info-btn" onclick="showModal('${el.name.replace(/'/g, "\\'")}', '${el.description.replace(/'/g, "\\'")}')">ℹ️ Info</button></td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        $(document).ready(function() {
+            initJQueryComponents();
+        });
+    </script>
+</body>
+</html>
