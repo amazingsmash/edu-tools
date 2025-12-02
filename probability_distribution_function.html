@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probability Density Function</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 850: '#151e32' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0f172a;
+            /* Slate 900 */
+            color: #e2e8f0;
+            /* Slate 200 */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        canvas {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            background: #1e293b;
+            /* Slate 800 */
+        }
+
+        .control-panel {
+            background: #1e293b;
+            border-top: 1px solid #334155;
+        }
+
+        /* Sliders & Buttons */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            margin-top: -6px;
+            transition: transform 0.1s;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #475569;
+            border-radius: 2px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(100%);
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+            display: block;
+            font-weight: 700;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            appearance: none;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col h-screen">
+
+    <!-- Header -->
+    <header
+        class="p-2 bg-slate-800 shadow-md z-10 flex flex-wrap justify-between items-center gap-2 border-b border-slate-700 shrink-0">
+        <div class="flex items-center gap-2">
+            <h1 class="text-lg font-bold text-sky-400 flex items-center gap-2">
+                PDF Simulator
+            </h1>
+            <!-- Distribution Selector -->
+            <div class="relative flex flex-col">
+                <select id="distSelect"
+                    class="bg-slate-900 border border-slate-600 text-white text-xs rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-40 p-1.5 pl-2 pr-6 font-semibold transition hover:border-sky-400 cursor-pointer">
+                    <option value="normal">Normal (Gaussian)</option>
+                    <option value="uniform">Uniform</option>
+                    <option value="exponential">Exponential</option>
+                    <option value="lognormal">Log-Normal</option>
+                    <option value="cauchy">Cauchy (Lorentz)</option>
+                    <option value="chisquared">Chi-Squared (k=3)</option>
+                </select>
+                <span id="distDesc" class="text-[10px] text-slate-500 mt-0.5 pl-1">Standard Normal Distribution</span>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div
+            class="text-right text-xs font-mono grid grid-cols-3 gap-x-4 gap-y-0.5 bg-slate-900/50 p-1.5 rounded-md border border-slate-700/50 min-w-[240px]">
+            <div class="text-slate-400">Samples:</div>
+            <div class="text-slate-400">Mean:</div>
+            <div class="text-slate-400 font-bold">Last:</div>
+
+            <div id="sampleCount" class="text-sky-400 font-bold">0</div>
+            <div id="currentMean" class="text-emerald-400">0.000</div>
+            <div id="lastValueDisplay" class="text-amber-400 font-bold">--</div>
+        </div>
+    </header>
+
+    <!-- Main Canvas Area -->
+    <main class="flex-grow relative flex justify-center items-center bg-slate-900 overflow-hidden">
+        <canvas id="simulationCanvas" class="w-full h-full block"></canvas>
+
+        <!-- Start Overlay -->
+        <div id="startOverlay"
+            class="absolute inset-0 flex items-center justify-center bg-black/70 z-20 backdrop-blur-sm">
+            <div class="bg-slate-800 p-6 rounded-xl shadow-2xl text-center max-w-md border border-slate-600 mx-4">
+                <h2 class="text-2xl font-bold mb-3 text-sky-400">Probability Density Function</h2>
+                <p class="mb-5 text-slate-300 leading-relaxed text-sm">
+                    Interactive demonstration of the Law of Large Numbers.
+                    Select a distribution and watch the histogram converge.
+                    <br><br>
+                    <span class="text-xs bg-slate-700 px-2 py-1 rounded border border-slate-600">Tip:</span> Use
+                    <span class="font-bold text-white bg-slate-600 px-1 rounded">←</span> and <span
+                        class="font-bold text-white bg-slate-600 px-1 rounded">→</span>
+                    keys to drop samples step-by-step.
+                </p>
+                <button id="startBtn"
+                    class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-6 rounded-lg transition transform hover:scale-105 shadow-lg shadow-sky-500/30 text-sm">
+                    Start Simulation
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Control Panel -->
+    <section class="control-panel p-2 grid grid-cols-2 md:grid-cols-12 gap-3 items-center text-xs shrink-0">
+
+        <!-- SECTION 1: MANUAL CONTROL -->
+        <div class="col-span-2 md:col-span-4 flex flex-col justify-center">
+            <div class="flex gap-2 h-8">
+                <button id="stepBackBtn"
+                    class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 rounded transition flex-1 flex items-center justify-center gap-1 border border-slate-600 font-semibold"
+                    title="Key: Left Arrow" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" class="w-3 h-3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                    Undo
+                </button>
+                <button id="stepForwardBtn"
+                    class="bg-sky-600 hover:bg-sky-500 text-white px-3 rounded transition flex-[1.5] flex items-center justify-center gap-1 font-bold shadow-lg shadow-sky-900/20"
+                    title="Key: Right Arrow">
+                    Drop Sample
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" class="w-3 h-3">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- SECTION 2: AUTO PLAY -->
+        <div class="col-span-2 md:col-span-5 flex items-center gap-2">
+            <button id="toggleBtn"
+                class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 h-8 rounded transition flex items-center justify-center gap-1 font-bold min-w-[100px] shadow-lg shadow-emerald-900/20">
+                <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                    stroke="currentColor" class="w-4 h-4 hidden">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+                </svg>
+                <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                    stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+                </svg>
+                <span id="toggleText">Pause</span>
+            </button>
+
+            <div class="flex-grow flex flex-col justify-center">
+                <div class="flex justify-between text-[10px] text-slate-400 leading-tight">
+                    <span>Speed</span>
+                    <span id="speedVal" class="text-sky-300 font-mono font-bold">5/s</span>
+                </div>
+                <input type="range" id="speedRange" min="0" max="100" value="40" step="1"
+                    class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer mt-1">
+            </div>
+        </div>
+
+        <!-- SECTION 3: SETTINGS -->
+        <div class="col-span-2 md:col-span-3 flex items-center gap-2">
+            <div class="flex-grow flex flex-col justify-center">
+                <div class="flex justify-between text-[10px] text-slate-400 leading-tight">
+                    <span>Bins</span>
+                    <span id="binsVal" class="text-slate-300 font-mono">50</span>
+                </div>
+                <input type="range" id="binsRange" min="20" max="150" value="50" step="5"
+                    class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer mt-1">
+            </div>
+            <button id="stdDevBtn"
+                class="bg-orange-900/40 hover:bg-orange-900/70 text-orange-200 border border-orange-800/50 h-8 px-3 rounded transition flex items-center justify-center gap-1 font-semibold whitespace-nowrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-3 h-3">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                </svg>
+                σ Lines
+            </button>
+            <button id="resetBtn"
+                class="bg-rose-900/40 hover:bg-rose-900/70 text-rose-200 border border-rose-800/50 h-8 px-3 rounded transition flex items-center justify-center gap-1 font-semibold whitespace-nowrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-3 h-3">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+                Clear
+            </button>
+        </div>
+    </section>
+
+    <script>
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // UI Elements
+        const elSampleCount = document.getElementById('sampleCount');
+        const elCurrentMean = document.getElementById('currentMean');
+        const elLastValue = document.getElementById('lastValueDisplay');
+        const elSpeedRange = document.getElementById('speedRange');
+        const elSpeedVal = document.getElementById('speedVal');
+        const elBinsRange = document.getElementById('binsRange');
+        const elBinsVal = document.getElementById('binsVal');
+        const elDistSelect = document.getElementById('distSelect');
+        const elDistDesc = document.getElementById('distDesc');
+        const btnToggle = document.getElementById('toggleBtn');
+        const btnReset = document.getElementById('resetBtn');
+        const btnStdDev = document.getElementById('stdDevBtn');
+        const btnStart = document.getElementById('startBtn');
+        const btnStepBack = document.getElementById('stepBackBtn');
+        const btnStepForward = document.getElementById('stepForwardBtn');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        const toggleText = document.getElementById('toggleText');
+        const overlay = document.getElementById('startOverlay');
+
+        // Simulation State
+        let state = {
+            isRunning: false,
+            distribution: 'normal',
+            samplesHistory: [],
+            historyPointer: 0,
+            bins: [],
+            sumVisualized: 0,
+
+            // Viewport ranges (changed based on distribution)
+            minRange: -4,
+            maxRange: 4,
+
+            numBins: 50,
+
+            // Speed logic
+            samplesPerSecond: 5,
+            pendingSamples: 0,
+            lastTime: 0,
+
+            fallingParticles: [],
+
+            // Visuals
+            showStdDev: false
+        };
+
+        // --- MATH HELPERS ---
+
+        // Error function approximation (Abramowitz and Stegun)
+        function erf(x) {
+            const sign = (x >= 0) ? 1 : -1;
+            x = Math.abs(x);
+            const a1 = 0.254829592;
+            const a2 = -0.284496736;
+            const a3 = 1.421413741;
+            const a4 = -1.453152027;
+            const a5 = 1.061405429;
+            const p = 0.3275911;
+
+            const t = 1.0 / (1.0 + p * x);
+            const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+            return sign * y;
+        }
+
+        // Standard Normal Box-Muller
+        function randNormal() {
+            let u = 0, v = 0;
+            while (u === 0) u = Math.random();
+            while (v === 0) v = Math.random();
+            return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        }
+
+        // --- DISTRIBUTION CONFIG ---
+
+        const DISTRIBUTIONS = {
+            normal: {
+                name: "Standard Normal",
+                desc: "Gaussian distribution (mean=0, sigma=1)",
+                min: -4, max: 4,
+                generate: () => randNormal(),
+                pdf: (x) => (1 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * x * x),
+                cdf: (x) => 0.5 * (1 + erf(x / Math.sqrt(2)))
+            },
+            uniform: {
+                name: "Uniform",
+                desc: "Flat probability between -2 and 2",
+                min: -3, max: 3,
+                generate: () => (Math.random() * 4) - 2,
+                pdf: (x) => (x >= -2 && x <= 2) ? 0.25 : 0,
+                cdf: (x) => {
+                    if (x < -2) return 0;
+                    if (x > 2) return 1;
+                    return (x + 2) / 4;
+                }
+            },
+            exponential: {
+                name: "Exponential",
+                desc: "Events in time (lambda=1)",
+                min: -1, max: 6,
+                generate: () => -Math.log(Math.random()),
+                pdf: (x) => (x >= 0) ? Math.exp(-x) : 0,
+                cdf: (x) => (x < 0) ? 0 : (1 - Math.exp(-x))
+            },
+            lognormal: {
+                name: "Log-Normal",
+                desc: "Product of random variables (mu=0, sigma=0.5)",
+                min: 0, max: 4,
+                generate: () => Math.exp(randNormal() * 0.5),
+                pdf: (x) => {
+                    if (x <= 0) return 0;
+                    const sigma = 0.5;
+                    const factor = 1 / (x * sigma * Math.sqrt(2 * Math.PI));
+                    const logX = Math.log(x);
+                    return factor * Math.exp(-(logX * logX) / (2 * sigma * sigma));
+                },
+                cdf: (x) => {
+                    if (x <= 0) return 0;
+                    const sigma = 0.5;
+                    return 0.5 * (1 + erf(Math.log(x) / (sigma * Math.sqrt(2))));
+                }
+            },
+            cauchy: {
+                name: "Cauchy (Lorentz)",
+                desc: "Fat tails, undefined mean (x0=0, gamma=1)",
+                min: -10, max: 10,
+                // Inverse CDF method: x0 + gamma * tan(pi * (u - 0.5))
+                generate: () => Math.tan(Math.PI * (Math.random() - 0.5)),
+                pdf: (x) => 1 / (Math.PI * (1 + x * x)),
+                cdf: (x) => (1 / Math.PI) * Math.atan(x) + 0.5
+            },
+            chisquared: {
+                name: "Chi-Squared (k=3)",
+                desc: "Sum of squares of 3 independent normals",
+                min: 0, max: 12,
+                // Sum of 3 squared standard normals
+                generate: () => {
+                    const z1 = randNormal();
+                    const z2 = randNormal();
+                    const z3 = randNormal();
+                    return z1 * z1 + z2 * z2 + z3 * z3;
+                },
+                pdf: (x) => {
+                    if (x <= 0) return 0;
+                    // For k=3: (1 / sqrt(2*pi)) * sqrt(x) * exp(-x/2)
+                    return (1 / Math.sqrt(2 * Math.PI)) * Math.sqrt(x) * Math.exp(-x / 2);
+                },
+                cdf: (x) => {
+                    if (x <= 0) return 0;
+                    // CDF for k=3: erf(sqrt(x/2)) - sqrt(2x/pi)*exp(-x/2)
+                    return erf(Math.sqrt(x / 2)) - Math.sqrt(2 * x / Math.PI) * Math.exp(-x / 2);
+                }
+            }
+        };
+
+        function setDistribution(type) {
+            state.distribution = type;
+            const config = DISTRIBUTIONS[type];
+            state.minRange = config.min;
+            state.maxRange = config.max;
+            elDistDesc.innerText = config.desc;
+            resetSimulation();
+        }
+
+        // --- CORE FUNCTIONS ---
+
+        function resizeCanvas() {
+            const parent = canvas.parentElement;
+            canvas.width = parent.clientWidth;
+            canvas.height = parent.clientHeight;
+            draw();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function initBins() {
+            state.bins = new Array(state.numBins).fill(0);
+        }
+
+        function getBinIndex(val) {
+            const range = state.maxRange - state.minRange;
+            return Math.floor(((val - state.minRange) / range) * state.numBins);
+        }
+
+        function resetSimulation() {
+            state.samplesHistory = [];
+            state.historyPointer = 0;
+            state.sumVisualized = 0;
+            state.pendingSamples = 0;
+            state.fallingParticles = [];
+            initBins();
+            updateUI();
+            draw();
+        }
+
+        function updateUI() {
+            elSampleCount.innerText = state.historyPointer.toLocaleString();
+
+            // Handle Mean Calculation (Cauchy warning)
+            if (state.distribution === 'cauchy') {
+                elCurrentMean.innerText = "Undefined";
+            } else {
+                const mean = state.historyPointer > 0 ? (state.sumVisualized / state.historyPointer) : 0;
+                elCurrentMean.innerText = mean.toFixed(3);
+            }
+
+            if (state.historyPointer > 0) {
+                const lastVal = state.samplesHistory[state.historyPointer - 1];
+                elLastValue.innerText = lastVal.toFixed(4);
+                // Color coding
+                if (lastVal > 0) elLastValue.className = 'text-emerald-300 font-bold text-base';
+                else if (lastVal < 0) elLastValue.className = 'text-rose-300 font-bold text-base';
+                else elLastValue.className = 'text-slate-300 font-bold text-base';
+            } else {
+                elLastValue.innerText = "--";
+                elLastValue.className = 'text-slate-500 font-bold text-base';
+            }
+
+            const isAtStart = state.historyPointer === 0;
+
+            btnStepBack.disabled = isAtStart || state.isRunning;
+            btnStepForward.disabled = state.isRunning;
+
+            if (state.isRunning) {
+                btnToggle.classList.replace('bg-emerald-600', 'bg-amber-600');
+                btnToggle.classList.replace('hover:bg-emerald-500', 'hover:bg-amber-500');
+                toggleText.innerText = "Pause";
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+
+                btnStepBack.classList.add('opacity-50', 'cursor-not-allowed');
+                btnStepForward.classList.add('opacity-50', 'cursor-not-allowed');
+                elDistSelect.disabled = true; // Lock distribution while running
+            } else {
+                btnToggle.classList.replace('bg-amber-600', 'bg-emerald-600');
+                btnToggle.classList.replace('hover:bg-emerald-500', 'hover:bg-emerald-500');
+                toggleText.innerText = "Resume";
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+
+                btnStepBack.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnStepForward.classList.remove('opacity-50', 'cursor-not-allowed');
+                elDistSelect.disabled = false;
+            }
+        }
+
+        // --- STEP LOGIC ---
+
+        function stepForward(animateParticle = false) {
+            let val;
+            const distConfig = DISTRIBUTIONS[state.distribution];
+
+            // Reuse history or generate new
+            if (state.historyPointer < state.samplesHistory.length) {
+                val = state.samplesHistory[state.historyPointer];
+            } else {
+                val = distConfig.generate();
+                state.samplesHistory.push(val);
+            }
+
+            state.historyPointer++;
+
+            // Update stats
+            state.sumVisualized += val;
+
+            const binIdx = getBinIndex(val);
+            if (binIdx >= 0 && binIdx < state.numBins) {
+                state.bins[binIdx]++;
+                if (animateParticle) spawnParticle(binIdx);
+            }
+        }
+
+        function stepBackward() {
+            if (state.historyPointer === 0) return;
+
+            state.historyPointer--;
+            const valToRemove = state.samplesHistory[state.historyPointer];
+
+            state.sumVisualized -= valToRemove;
+            const binIdx = getBinIndex(valToRemove);
+            if (binIdx >= 0 && binIdx < state.numBins) {
+                state.bins[binIdx] = Math.max(0, state.bins[binIdx] - 1);
+            }
+            updateUI();
+            draw();
+        }
+
+        function spawnParticle(binIdx) {
+            const binWidth = (canvas.width - 80) / state.numBins;
+            state.fallingParticles.push({
+                x: 40 + (binIdx * binWidth) + (binWidth / 2),
+                y: 0,
+                speed: Math.random() * 8 + 12,
+                color: `hsl(${Math.random() * 40 + 190}, 90%, 70%)` // Cyan/Blueish
+            });
+        }
+
+        function updateLoop(timestamp) {
+            if (!state.isRunning) {
+                state.lastTime = timestamp;
+                return;
+            }
+
+            if (!state.lastTime) state.lastTime = timestamp;
+            const deltaTime = (timestamp - state.lastTime) / 1000; // in seconds
+            state.lastTime = timestamp;
+
+            // Calculate samples to add based on speed (samples per second)
+            const samplesToAdd = state.samplesPerSecond * deltaTime;
+            state.pendingSamples += samplesToAdd;
+
+            let count = 0;
+            const maxPerFrame = 500;
+
+            while (state.pendingSamples >= 1 && count < maxPerFrame) {
+                state.pendingSamples--;
+                count++;
+
+                // Animate only sparse particles at high speed
+                const shouldAnimate = (state.samplesPerSecond < 20) || (count === Math.floor(state.pendingSamples) + 1);
+                stepForward(shouldAnimate);
+            }
+
+            // Drop excess if speed is crazy high (simulate instant result)
+            if (state.pendingSamples > maxPerFrame) {
+                const skip = Math.floor(state.pendingSamples);
+                for (let i = 0; i < skip; i++) stepForward(false);
+                state.pendingSamples -= skip;
+            }
+
+            // Physics
+            for (let i = state.fallingParticles.length - 1; i >= 0; i--) {
+                const p = state.fallingParticles[i];
+                p.y += p.speed;
+                if (p.y > canvas.height - 40) state.fallingParticles.splice(i, 1);
+            }
+            updateUI();
+        }
+
+        // --- INTERACTION ---
+
+        function mapPixelToVal(px) {
+            const range = state.maxRange - state.minRange;
+            return state.minRange + ((px - 40) / (canvas.width - 80)) * range;
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            // Check if within graph area (approx 40 to width-40)
+            if (x >= 40 && x <= canvas.width - 40) {
+                state.selectedX = mapPixelToVal(x);
+                draw();
+            } else {
+                state.selectedX = null;
+                draw();
+            }
+        });
+
+        // --- RENDERING ---
+
+        function mapX(val) {
+            const range = state.maxRange - state.minRange;
+            return 40 + ((val - state.minRange) / range) * (canvas.width - 80);
+        }
+
+        function draw() {
+            // Background
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Graph Area
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(40, 30, canvas.width - 80, canvas.height - 70);
+
+            const bottomY = canvas.height - 40;
+            const topY = 30;
+            const graphHeight = bottomY - topY;
+            const binWidth = (canvas.width - 80) / state.numBins;
+
+            let maxBinCount = Math.max(...state.bins, 1);
+            const scaleFactor = (graphHeight * 0.9) / maxBinCount;
+
+            // 1. Draw Histogram
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.4)'; // Sky 400 with opacity
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i < state.numBins; i++) {
+                const barHeight = state.bins[i] * scaleFactor;
+                const x = 40 + (i * binWidth);
+                const y = bottomY - barHeight;
+
+                if (barHeight > 0) {
+                    ctx.fillRect(x, y, Math.max(1, binWidth - 1), barHeight);
+                    // Top line for crispness
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + binWidth - 1, y);
+                    ctx.stroke();
+                }
+            }
+
+            // 1b. Draw Line Connecting Bar Tops
+            ctx.beginPath();
+            ctx.strokeStyle = '#f97316'; // Orange 500
+            ctx.lineWidth = 2;
+            ctx.lineJoin = 'round';
+
+            let firstPoint = true;
+            for (let i = 0; i < state.numBins; i++) {
+                const barHeight = state.bins[i] * scaleFactor;
+                const x = 40 + (i * binWidth) + (binWidth / 2); // Center of the bar
+                const y = bottomY - barHeight;
+
+                if (firstPoint) {
+                    ctx.moveTo(x, y);
+                    firstPoint = false;
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+
+            // 2. Draw Particles
+            state.fallingParticles.forEach(p => {
+                ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = p.color; ctx.fill();
+            });
+
+            // 3. Draw Theoretical PDF
+            const distConfig = DISTRIBUTIONS[state.distribution];
+
+            // Scale Calculation
+            const rangeTotal = state.maxRange - state.minRange;
+            const binWidthWorld = rangeTotal / state.numBins;
+            const pdfPixelFactor = (state.historyPointer * binWidthWorld) * scaleFactor;
+
+            // Dynamic scale adjustment for empty charts or crazy peaks
+            const peakPdf = (distConfig.pdf(0) || distConfig.pdf(1) || 0.5);
+            const fallbackScale = graphHeight * 0.8 / peakPdf;
+            const finalPdfScale = state.historyPointer < 50 ? fallbackScale : pdfPixelFactor;
+
+            // 3a. Draw Shaded Area (CDF)
+            if (state.selectedX !== null && state.selectedX >= state.minRange && state.selectedX <= state.maxRange) {
+                ctx.beginPath();
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.2)'; // Red 500 with low opacity
+
+                let first = true;
+                const pxStep = 2;
+                // Iterate from left edge to selected X
+                const endX = mapX(state.selectedX);
+
+                for (let xPx = 40; xPx <= endX; xPx += pxStep) {
+                    const val = state.minRange + ((xPx - 40) / (canvas.width - 80)) * rangeTotal;
+                    const pdfValue = distConfig.pdf(val);
+                    const pdfY = bottomY - (pdfValue * finalPdfScale);
+                    const clampedY = Math.max(topY, Math.min(bottomY, pdfY));
+
+                    if (first) {
+                        ctx.moveTo(xPx, bottomY);
+                        ctx.lineTo(xPx, clampedY);
+                        first = false;
+                    } else {
+                        ctx.lineTo(xPx, clampedY);
+                    }
+                }
+                ctx.lineTo(endX, bottomY);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // 3b. Draw PDF Curve
+            ctx.beginPath();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#34d399'; // Emerald 400
+            ctx.lineJoin = 'round';
+
+            let first = true;
+            // Draw resolution
+            const pxStep = 3;
+            for (let xPx = 40; xPx <= canvas.width - 40; xPx += pxStep) {
+                const val = state.minRange + ((xPx - 40) / (canvas.width - 80)) * rangeTotal;
+                const pdfValue = distConfig.pdf(val);
+
+                const pdfY = bottomY - (pdfValue * finalPdfScale);
+
+                // Clamp graphics to not draw outside top/bottom
+                const clampedY = Math.max(topY, Math.min(bottomY, pdfY));
+
+                if (first) { ctx.moveTo(xPx, clampedY); first = false; }
+                else ctx.lineTo(xPx, clampedY);
+            }
+            ctx.stroke();
+
+            // 4. Draw Selected Value (Red Line)
+            if (state.selectedX !== null && state.selectedX >= state.minRange && state.selectedX <= state.maxRange) {
+                const xPx = mapX(state.selectedX);
+                const density = distConfig.pdf(state.selectedX);
+                const cdfVal = distConfig.cdf(state.selectedX);
+                const pdfY = bottomY - (density * finalPdfScale);
+                const clampedY = Math.max(topY, Math.min(bottomY, pdfY));
+
+                // Line
+                ctx.beginPath();
+                ctx.strokeStyle = '#ef4444'; // Red 500
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.moveTo(xPx, topY);
+                ctx.lineTo(xPx, bottomY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Point
+                ctx.beginPath();
+                ctx.fillStyle = '#ef4444';
+                ctx.arc(xPx, clampedY, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Tooltip
+                const text = `x = ${state.selectedX.toFixed(3)}`;
+                const text2 = `CDF = ${(cdfVal * 100).toFixed(2)}%`;
+                const text3 = "Probability (Area under curve)";
+
+                ctx.font = 'bold 12px sans-serif';
+                const w1 = ctx.measureText(text).width;
+                const w2 = ctx.measureText(text2).width;
+                const w3 = ctx.measureText(text3).width;
+                const boxWidth = Math.max(w1, w2, w3) + 20;
+                const boxHeight = 60;
+
+                let boxX = xPx + 15;
+                let boxY = clampedY - 30;
+
+                // Keep tooltip on screen
+                if (boxX + boxWidth > canvas.width - 10) boxX = xPx - boxWidth - 15;
+                if (boxY < topY) boxY = topY + 10;
+
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.9)'; // Slate 900
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.roundRect(boxX, boxY, boxWidth, boxHeight, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#ef4444';
+                ctx.textAlign = 'left';
+                ctx.fillText(text, boxX + 10, boxY + 20);
+
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillText(text2, boxX + 10, boxY + 36);
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'italic 10px sans-serif';
+                ctx.fillText(text3, boxX + 10, boxY + 52);
+            }
+
+            // 5. Axes & Labels
+            ctx.beginPath(); ctx.strokeStyle = '#475569'; ctx.lineWidth = 1;
+            // X-Axis
+            ctx.moveTo(40, bottomY); ctx.lineTo(canvas.width - 40, bottomY); ctx.stroke();
+            // Y-Axis
+            ctx.moveTo(40, bottomY); ctx.lineTo(40, topY); ctx.stroke();
+
+            ctx.fillStyle = '#94a3b8'; ctx.font = '12px monospace'; ctx.textAlign = 'center';
+
+            // X-Axis Labels
+            // Adaptive steps for axis labels
+            const step = (rangeTotal <= 8) ? 1 : (rangeTotal <= 20 ? 2 : 5);
+
+            for (let i = Math.ceil(state.minRange); i <= Math.floor(state.maxRange); i += step) {
+                const x = mapX(i);
+                ctx.fillText(i, x, bottomY + 18);
+                // Grid line
+                if (i !== 0) {
+                    ctx.beginPath(); ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                    ctx.moveTo(x, bottomY); ctx.lineTo(x, topY); ctx.stroke();
+                }
+            }
+
+            // Y-Axis Labels (Probability Density)
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+
+            // Calculate max PDF value visible at the top of the graph
+            const maxVisiblePdf = (bottomY - topY) / finalPdfScale;
+
+            // Determine nice step size for Y-axis
+            // We want about 5-8 ticks
+            const roughStep = maxVisiblePdf / 6;
+            const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+            const normalizedStep = roughStep / magnitude;
+
+            let yStep;
+            if (normalizedStep < 1.5) yStep = 1 * magnitude;
+            else if (normalizedStep < 3.5) yStep = 2 * magnitude;
+            else if (normalizedStep < 7.5) yStep = 5 * magnitude;
+            else yStep = 10 * magnitude;
+
+            for (let val = 0; val <= maxVisiblePdf; val += yStep) {
+                if (val === 0) continue; // Skip 0 as it overlaps with X-axis
+
+                const y = bottomY - (val * finalPdfScale);
+                if (y < topY) break; // Don't draw above the graph area
+
+                ctx.fillText(val.toFixed(2), 35, y);
+
+                // Tick mark
+                ctx.beginPath();
+                ctx.strokeStyle = '#475569';
+                ctx.moveTo(35, y);
+                ctx.lineTo(40, y);
+                ctx.stroke();
+
+                // Grid line
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctx.moveTo(40, y);
+                ctx.lineTo(canvas.width - 40, y);
+                ctx.stroke();
+            }
+            ctx.textBaseline = 'alphabetic'; // Reset baseline
+
+            // Center Line (0) if visible
+            if (state.minRange < 0 && state.maxRange > 0) {
+                const zeroX = mapX(0);
+                if (zeroX >= 40 && zeroX <= canvas.width - 40) {
+                    ctx.beginPath(); ctx.setLineDash([4, 4]); ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                    ctx.moveTo(zeroX, bottomY); ctx.lineTo(zeroX, topY); ctx.stroke(); ctx.setLineDash([]);
+                }
+            }
+
+            // 6. Draw Std Dev Lines
+            if (state.showStdDev) {
+                const lines = getStdDevLines();
+                ctx.strokeStyle = '#f97316'; // Orange 500
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([4, 2]);
+                ctx.textAlign = 'center';
+                ctx.font = '10px sans-serif';
+                ctx.fillStyle = '#fdba74'; // Orange 300
+
+                lines.forEach(line => {
+                    if (line.val >= state.minRange && line.val <= state.maxRange) {
+                        const x = mapX(line.val);
+                        ctx.beginPath();
+                        ctx.moveTo(x, bottomY);
+                        ctx.lineTo(x, topY);
+                        ctx.stroke();
+                        ctx.fillText(line.label, x, topY + 10);
+                    }
+                });
+                ctx.setLineDash([]);
+            }
+        }
+
+        function getStdDevLines() {
+            const type = state.distribution;
+            const lines = [];
+
+            if (type === 'normal') {
+                // Mean = 0, Sigma = 1
+                [-3, -2, -1, 1, 2, 3].forEach(sigma => {
+                    lines.push({ val: sigma, label: `${sigma > 0 ? '+' : ''}${sigma}σ` });
+                });
+            } else if (type === 'uniform') {
+                // Mean = 0, Sigma = 1.1547 (range 4 / sqrt(12))
+                const sigma = 1.1547;
+                lines.push({ val: -sigma, label: '-1σ' });
+                lines.push({ val: sigma, label: '+1σ' });
+                lines.push({ val: -2 * sigma, label: '-2σ' });
+                lines.push({ val: 2 * sigma, label: '+2σ' });
+            } else if (type === 'exponential') {
+                // Mean = 1, Sigma = 1
+                // Lines at mean +/- k*sigma -> 1 +/- k
+                lines.push({ val: 2, label: '+1σ' }); // 1 + 1
+                lines.push({ val: 3, label: '+2σ' }); // 1 + 2
+                lines.push({ val: 0, label: '-1σ' }); // 1 - 1
+            } else if (type === 'lognormal') {
+                // mu=0, sigma=0.5
+                // Mean = 1.133, StdDev = 0.603
+                const mean = 1.133;
+                const std = 0.603;
+                lines.push({ val: mean, label: 'μ' });
+                lines.push({ val: mean + std, label: '+1σ' });
+                lines.push({ val: mean + 2 * std, label: '+2σ' });
+                lines.push({ val: mean - std, label: '-1σ' });
+            } else if (type === 'chisquared') {
+                // k=3. Mean=3, StdDev=sqrt(6)=2.45
+                const mean = 3;
+                const std = 2.449;
+                lines.push({ val: mean, label: 'μ' });
+                lines.push({ val: mean + std, label: '+1σ' });
+                lines.push({ val: mean + 2 * std, label: '+2σ' });
+                lines.push({ val: mean - std, label: '-1σ' });
+            }
+
+            return lines;
+        }
+
+        function animationLoop(timestamp) {
+            updateLoop(timestamp);
+            draw();
+            state.animationId = requestAnimationFrame(animationLoop);
+        }
+
+        // --- INPUT HANDLING ---
+
+        function updateSpeed(sliderVal) {
+            let samplesPerSec;
+
+            if (sliderVal <= 10) {
+                // Range 0-10: Maps to 0.1 to 1.0 (1 sample every 10s to 1 sample every 1s)
+                samplesPerSec = 0.1 + (sliderVal / 10) * 0.9;
+            } else if (sliderVal <= 60) {
+                samplesPerSec = 1 + (sliderVal - 10) * 1.2;
+            } else {
+                const t = (sliderVal - 60) / 40;
+                samplesPerSec = 60 + (Math.pow(t, 3) * 2000);
+            }
+
+            state.samplesPerSecond = samplesPerSec;
+
+            if (samplesPerSec < 1) {
+                const seconds = Math.round(1 / samplesPerSec);
+                elSpeedVal.innerText = `1 / ${seconds}s`;
+            } else {
+                elSpeedVal.innerText = `${Math.round(samplesPerSec)} / sec`;
+            }
+        }
+
+        elSpeedRange.addEventListener('input', (e) => updateSpeed(parseInt(e.target.value)));
+
+        elDistSelect.addEventListener('change', (e) => {
+            setDistribution(e.target.value);
+        });
+
+        elBinsRange.addEventListener('input', (e) => {
+            state.numBins = parseInt(e.target.value);
+            elBinsVal.innerText = state.numBins;
+            initBins();
+
+            // Re-bin existing data
+            const range = state.maxRange - state.minRange;
+            for (let val of state.samplesHistory) {
+                const binIdx = Math.floor(((val - state.minRange) / range) * state.numBins);
+                if (binIdx >= 0 && binIdx < state.numBins) {
+                    state.bins[binIdx]++;
+                }
+            }
+            draw();
+        });
+
+        btnStart.addEventListener('click', () => {
+            overlay.classList.add('hidden');
+            state.isRunning = false; // Wait for user to press Resume/Start
+            state.lastTime = performance.now();
+            initBins();
+            updateUI();
+            animationLoop(performance.now());
+        });
+
+        btnToggle.addEventListener('click', () => {
+            state.isRunning = !state.isRunning;
+            if (state.isRunning) state.lastTime = performance.now();
+            updateUI();
+        });
+
+        btnReset.addEventListener('click', resetSimulation);
+
+        btnStdDev.addEventListener('click', () => {
+            state.showStdDev = !state.showStdDev;
+            if (state.showStdDev) {
+                btnStdDev.classList.add('bg-orange-900/70', 'border-orange-500');
+                btnStdDev.classList.remove('bg-orange-900/40', 'border-orange-800/50');
+            } else {
+                btnStdDev.classList.remove('bg-orange-900/70', 'border-orange-500');
+                btnStdDev.classList.add('bg-orange-900/40', 'border-orange-800/50');
+            }
+            draw();
+        });
+
+        btnStepForward.addEventListener('click', () => {
+            if (state.isRunning) return;
+            stepForward(true);
+            updateUI();
+            draw();
+        });
+
+        btnStepBack.addEventListener('click', () => {
+            if (state.isRunning) return;
+            stepBackward();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (state.isRunning) return;
+            if (e.key === 'ArrowRight') {
+                stepForward(true);
+                updateUI();
+                draw();
+            } else if (e.key === 'ArrowLeft') {
+                stepBackward();
+            }
+        });
+
+        // Init
+        updateSpeed(40);
+        initBins();
+        setDistribution('normal');
+        resizeCanvas();
+
+    </script>
+</body>
+
+</html>
