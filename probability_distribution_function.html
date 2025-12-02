@@ -545,45 +545,46 @@
         }
 
         function updateLoop(timestamp) {
-            if (!state.isRunning) {
-                state.lastTime = timestamp;
-                return;
-            }
-
             if (!state.lastTime) state.lastTime = timestamp;
             const deltaTime = (timestamp - state.lastTime) / 1000; // in seconds
             state.lastTime = timestamp;
 
-            // Calculate samples to add based on speed (samples per second)
-            const samplesToAdd = state.samplesPerSecond * deltaTime;
-            state.pendingSamples += samplesToAdd;
+            if (state.isRunning) {
+                // Calculate samples to add based on speed (samples per second)
+                const samplesToAdd = state.samplesPerSecond * deltaTime;
+                state.pendingSamples += samplesToAdd;
 
-            let count = 0;
-            const maxPerFrame = 500;
+                let count = 0;
+                const maxPerFrame = 500;
 
-            while (state.pendingSamples >= 1 && count < maxPerFrame) {
-                state.pendingSamples--;
-                count++;
+                while (state.pendingSamples >= 1 && count < maxPerFrame) {
+                    state.pendingSamples--;
+                    count++;
 
-                // Animate only sparse particles at high speed
-                const shouldAnimate = (state.samplesPerSecond < 20) || (count === Math.floor(state.pendingSamples) + 1);
-                stepForward(shouldAnimate);
+                    // Animate only sparse particles at high speed
+                    const shouldAnimate = (state.samplesPerSecond < 20) || (count === Math.floor(state.pendingSamples) + 1);
+                    stepForward(shouldAnimate);
+                }
+
+                // Drop excess if speed is crazy high (simulate instant result)
+                if (state.pendingSamples > maxPerFrame) {
+                    const skip = Math.floor(state.pendingSamples);
+                    for (let i = 0; i < skip; i++) stepForward(false);
+                    state.pendingSamples -= skip;
+                }
             }
 
-            // Drop excess if speed is crazy high (simulate instant result)
-            if (state.pendingSamples > maxPerFrame) {
-                const skip = Math.floor(state.pendingSamples);
-                for (let i = 0; i < skip; i++) stepForward(false);
-                state.pendingSamples -= skip;
-            }
-
-            // Physics
+            // Physics (Always run, even if paused, so manual drops animate)
             for (let i = state.fallingParticles.length - 1; i >= 0; i--) {
                 const p = state.fallingParticles[i];
                 p.y += p.speed;
                 if (p.y > canvas.height - 40) state.fallingParticles.splice(i, 1);
             }
-            updateUI();
+
+            // Only update UI if running or if particles are falling (to avoid unnecessary DOM updates)
+            if (state.isRunning || state.fallingParticles.length > 0) {
+                updateUI();
+            }
         }
 
         // --- INTERACTION ---
