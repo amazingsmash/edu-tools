@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataViz: Chart Catalogue</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --card-bg: rgba(22, 33, 62, 0.7);
+            --text-color: #eaeaea;
+            --accent-color: #0f3460;
+            --neon-blue: #4d7cff;
+            --neon-purple: #b554ff;
+            --neon-green: #00ff9d;
+            --neon-pink: #ff0055;
+            --neon-yellow: #feca57;
+            --neon-orange: #ff9f43;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(77, 124, 255, 0.5);
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 400px;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(77, 124, 255, 0.2);
+            border-color: rgba(77, 124, 255, 0.3);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #ccc;
+            width: 100%;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .chart-footer {
+            margin-top: auto;
+            /* Pushes footer to bottom */
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            font-size: 0.85rem;
+            color: #aaa;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .footer-desc {
+            font-style: italic;
+            line-height: 1.4;
+        }
+
+        .tags-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .tag.compare {
+            background: rgba(77, 124, 255, 0.15);
+            color: var(--neon-blue);
+            border: 1px solid rgba(77, 124, 255, 0.3);
+        }
+
+        .tag.dist {
+            background: rgba(0, 255, 157, 0.15);
+            color: var(--neon-green);
+            border: 1px solid rgba(0, 255, 157, 0.3);
+        }
+
+        .tag.rel {
+            background: rgba(254, 202, 87, 0.15);
+            color: var(--neon-yellow);
+            border: 1px solid rgba(254, 202, 87, 0.3);
+        }
+
+        .tag.evo {
+            background: rgba(255, 159, 67, 0.15);
+            color: var(--neon-orange);
+            border: 1px solid rgba(255, 159, 67, 0.3);
+        }
+
+        .tag.comp {
+            background: rgba(181, 84, 255, 0.15);
+            color: var(--neon-purple);
+            border: 1px solid rgba(181, 84, 255, 0.3);
+        }
+
+        .tag.data-type {
+            background: rgba(255, 255, 255, 0.05);
+            color: #eaeaea;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tech-name {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.75rem;
+            color: #fff;
+            margin-top: 5px;
+            text-align: right;
+            opacity: 0.8;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Responsive Text Size */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Modal Expansion Styles */
+        .chart-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .chart-backdrop.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .chart-card.expanded {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80vw;
+            height: 80vh;
+            z-index: 1000;
+            max-width: none;
+            margin: 0;
+            cursor: default;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-card.expanded:hover {
+            transform: translate(-50%, -50%);
+            /* Override hover lift */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .chart-card.expanded .chart-container {
+            height: 100%;
+            flex-grow: 1;
+        }
+
+        /* Expanded Typography Overrides */
+        .chart-card.expanded h2 {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+        }
+
+        .chart-card.expanded .footer-desc {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .chart-card.expanded .tag {
+            font-size: 1rem;
+            padding: 6px 12px;
+        }
+
+        .placeholder-card {
+            visibility: hidden;
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chart-backdrop" id="backdrop"></div>
+
+    <h1>DataViz: Chart Catalogue</h1>
+
+    <div class="grid-container">
+
+        <!-- 1. Stacked Bar Chart -->
+        <div class="chart-card">
+            <h2>Stacked Bar Chart</h2>
+            <div class="chart-container">
+                <canvas id="stackedBarChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Monthly cloud infrastructure costs broken down by service type (EC2, S3, RDS).
+                </div>
+                <div class="tags-row">
+                    <span class="tag comp">See Composition</span>
+                    <span class="tag data-type">Discrete Time</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'bar' (stacked)</div>
+            </div>
+        </div>
+
+        <!-- 2. Column Chart with % Change -->
+        <div class="chart-card">
+            <h2>Column Chart (% Change)</h2>
+            <div class="chart-container">
+                <canvas id="columnPercentChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Average response time comparison across endpoints with percentage delta vs
+                    previous.</div>
+                <div class="tags-row">
+                    <span class="tag compare">Compare</span>
+                    <span class="tag data-type">Categorical</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'bar'</div>
+            </div>
+        </div>
+
+        <!-- 3. Comparative Distribution -->
+        <div class="chart-card">
+            <h2>Comparative Distribution Chart</h2>
+            <div class="chart-container">
+                <canvas id="comparativeDistChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Traffic load comparison between US-East and EU-West regions over 24 hours.
+                </div>
+                <div class="tags-row">
+                    <span class="tag evo">See Evolution</span>
+                    <span class="tag data-type">Continuous Time</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'line'</div>
+            </div>
+        </div>
+
+        <!-- 4. Waterfall Chart -->
+        <div class="chart-card">
+            <h2>Waterfall Chart</h2>
+            <div class="chart-container">
+                <canvas id="waterfallChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Breakdown of total page load latency into cumulative connection phases.</div>
+                <div class="tags-row">
+                    <span class="tag comp">See Composition</span>
+                    <span class="tag data-type">Categorical / Sequential</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'bar' (floating)</div>
+            </div>
+        </div>
+
+        <!-- 5. Donut Chart -->
+        <div class="chart-card">
+            <h2>Donut Chart</h2>
+            <div class="chart-container">
+                <canvas id="donutChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Proportion of different programming languages composing the codebase.</div>
+                <div class="tags-row">
+                    <span class="tag comp">See Composition</span>
+                    <span class="tag data-type">Categorical</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'doughnut'</div>
+            </div>
+        </div>
+
+        <!-- 6. Progress Chart -->
+        <div class="chart-card">
+            <h2>Progress Chart</h2>
+            <div class="chart-container">
+                <canvas id="progressChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Visualizing the completion status of a machine learning training job.</div>
+                <div class="tags-row">
+                    <span class="tag comp">See Composition</span>
+                    <span class="tag data-type">Percentage</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'doughnut' (gauge)</div>
+            </div>
+        </div>
+
+        <!-- 7. Clustered Charts -->
+        <div class="chart-card">
+            <h2>Clustered Bar Chart</h2>
+            <div class="chart-container">
+                <canvas id="clusteredChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Benchmarking different sorting algorithms across increasing input sizes.</div>
+                <div class="tags-row">
+                    <span class="tag compare">Compare</span>
+                    <span class="tag data-type">Categorical (Grouped)</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'bar'</div>
+            </div>
+        </div>
+
+        <!-- 8. Trend Chart -->
+        <div class="chart-card">
+            <h2>Trend Chart</h2>
+            <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Volume of server critical errors (5xx) observed over the last 24 hours.</div>
+                <div class="tags-row">
+                    <span class="tag evo">See Evolution</span>
+                    <span class="tag data-type">Continuous Time</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'line'</div>
+            </div>
+        </div>
+
+        <!-- 9. Categorical Chart -->
+        <div class="chart-card">
+            <h2>Categorical Chart (Horizontal Bar)</h2>
+            <div class="chart-container">
+                <canvas id="categoricalChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Count of active bug tickets categorized by their severity level.</div>
+                <div class="tags-row">
+                    <span class="tag compare">Compare</span>
+                    <span class="tag data-type">Categorical / Ordinal</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'bar' (indexAxis: 'y')</div>
+            </div>
+        </div>
+
+        <!-- 10. Bar Chart -->
+        <div class="chart-card">
+            <h2>Bar Chart</h2>
+            <div class="chart-container">
+                <canvas id="barChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Total traffic volume ranking for the most accessed API endpoints.</div>
+                <div class="tags-row">
+                    <span class="tag compare">Compare</span>
+                    <span class="tag data-type">Categorical</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'bar'</div>
+            </div>
+        </div>
+
+        <!-- 11. Line Chart -->
+        <div class="chart-card">
+            <h2>Line Chart</h2>
+            <div class="chart-container">
+                <canvas id="lineChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Real-time CPU utilization percentage monitored over a short window.</div>
+                <div class="tags-row">
+                    <span class="tag evo">See Evolution</span>
+                    <span class="tag data-type">Continuous Time</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'line'</div>
+            </div>
+        </div>
+
+        <!-- 12. Variance Chart -->
+        <div class="chart-card">
+            <h2>Variance Chart</h2>
+            <div class="chart-container">
+                <canvas id="varianceChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Deviation of actual department spending against the allocated quarterly budget.
+                </div>
+                <div class="tags-row">
+                    <span class="tag compare">Compare</span>
+                    <span class="tag data-type">Categorical</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'bar'</div>
+            </div>
+        </div>
+
+        <!-- 13. Distribution Chart -->
+        <div class="chart-card">
+            <h2>Distribution Chart (Histogram)</h2>
+            <div class="chart-container">
+                <canvas id="distributionChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Frequency distribution of API request payload sizes across standard ranges.
+                </div>
+                <div class="tags-row">
+                    <span class="tag dist">See Distribution</span>
+                    <span class="tag data-type">Continuous (Binned)</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'bar' (histogram)</div>
+            </div>
+        </div>
+
+        <!-- 14. Snowfall Trend Chart -->
+        <div class="chart-card">
+            <h2>Snowfall Trend Chart (Scatter)</h2>
+            <div class="chart-container">
+                <canvas id="snowfallChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Individual webhook events plotted by arrival time and payload size.</div>
+                <div class="tags-row">
+                    <span class="tag rel">See Relationship</span>
+                    <span class="tag data-type">Continuous (Values)</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'scatter'</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Global Default Chart Settings
+        Chart.defaults.color = '#ccc';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+        Chart.defaults.font.family = 'Inter';
+
+        const chartColors = {
+            blue: '#4d7cff',
+            purple: '#b554ff',
+            green: '#00ff9d',
+            pink: '#ff0055',
+            orange: '#ff9f43',
+            yellow: '#feca57',
+            red: '#ff6b6b'
+        };
+
+        // 1. Stacked Bar Chart: Cloud Costs
+        new Chart(document.getElementById('stackedBarChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [
+                    { label: 'EC2', data: [120, 130, 125, 140, 160, 170], backgroundColor: chartColors.blue, stack: 'Stack 0' },
+                    { label: 'S3', data: [40, 45, 50, 55, 60, 65], backgroundColor: chartColors.purple, stack: 'Stack 0' },
+                    { label: 'RDS', data: [80, 80, 85, 90, 90, 95], backgroundColor: chartColors.pink, stack: 'Stack 0' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top' }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Month' } },
+                    y: { title: { display: true, text: 'Cost (USD)' } }
+                }
+            }
+        });
+
+        // 2. Column Chart with % Change: API Latency
+        new Chart(document.getElementById('columnPercentChart'), {
+            type: 'bar',
+            data: {
+                labels: ['/auth', '/users', '/products', '/checkout'],
+                datasets: [{
+                    label: 'Avg Response Time',
+                    data: [120, 45, 210, 350],
+                    backgroundColor: [chartColors.green, chartColors.green, chartColors.orange, chartColors.red],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: function (context) {
+                                const changes = ['-10%', '-5%', '+15%', '+20%'];
+                                return `Change: ${changes[context.dataIndex]}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Endpoint' } },
+                    y: { title: { display: true, text: 'Time (ms)' } }
+                }
+            }
+        });
+
+        // 3. Comparative Distribution: Load Balancer
+        new Chart(document.getElementById('comparativeDistChart'), {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                datasets: [
+                    { label: 'US-East (Req)', data: [500, 300, 1200, 2500, 2200, 1800], borderColor: chartColors.blue, tension: 0.4, fill: true, backgroundColor: 'rgba(77, 124, 255, 0.2)' },
+                    { label: 'EU-West (Req)', data: [1500, 1800, 2200, 1000, 800, 600], borderColor: chartColors.green, tension: 0.4, fill: true, backgroundColor: 'rgba(0, 255, 157, 0.2)' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Time of Day' } },
+                    y: { title: { display: true, text: 'Requests/sec' } }
+                }
+            }
+        });
+
+        // 4. Waterfall Chart: Page Load Time
+        new Chart(document.getElementById('waterfallChart'), {
+            type: 'bar',
+            data: {
+                labels: ['DNS', 'TCP', 'SSL', 'TTFB', 'Download', 'Total'],
+                datasets: [{
+                    label: 'Duration (ms)',
+                    data: [
+                        [0, 50],
+                        [50, 120],
+                        [120, 200],
+                        [200, 450],
+                        [450, 600],
+                        [0, 600]
+                    ],
+                    backgroundColor: [
+                        chartColors.blue, chartColors.blue, chartColors.blue,
+                        chartColors.orange, chartColors.green, chartColors.purple
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const v = context.raw;
+                                return `${context.dataset.label}: ${v[1] - v[0]} ms`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Load Phase' } },
+                    y: { title: { display: true, text: 'Time (ms)' }, min: 0 }
+                }
+            }
+        });
+
+        // 5. Donut Chart: Repo Languages
+        new Chart(document.getElementById('donutChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['TypeScript', 'Python', 'Rust', 'CSS'],
+                datasets: [{
+                    label: 'Codebase %',
+                    data: [45, 25, 20, 10],
+                    backgroundColor: [chartColors.blue, chartColors.yellow, chartColors.orange, chartColors.pink],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'right' }
+                }
+            }
+        });
+
+        // 6. Progress Chart: Model Training (Doughnut as Gauge)
+        new Chart(document.getElementById('progressChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Remaining'],
+                datasets: [{
+                    label: 'Epochs',
+                    data: [75, 25],
+                    backgroundColor: [chartColors.green, 'rgba(255,255,255,0.05)'],
+                    borderWidth: 0,
+                    cutout: '80%',
+                    circumference: 180,
+                    rotation: -90
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'bottom' },
+                    title: { display: true, text: '75/100 Epochs', position: 'bottom', color: chartColors.green, font: { size: 16 } }
+                }
+            }
+        });
+
+        // 7. Clustered Chart: Algo Benchmarks
+        new Chart(document.getElementById('clusteredChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Small Input', 'Medium Input', 'Large Input'],
+                datasets: [
+                    { label: 'Quick Sort', data: [10, 45, 120], backgroundColor: chartColors.blue },
+                    { label: 'Merge Sort', data: [15, 50, 130], backgroundColor: chartColors.purple },
+                    { label: 'Bubble Sort', data: [50, 300, 900], backgroundColor: chartColors.pink }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } },
+                scales: {
+                    x: { title: { display: true, text: 'Dataset Size' } },
+                    y: { title: { display: true, text: 'Execution Time (ms)' } }
+                }
+            }
+        });
+
+        // 8. Trend Chart: Server 5xx Errors
+        new Chart(document.getElementById('trendChart'), {
+            type: 'line',
+            data: {
+                labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
+                datasets: [{
+                    label: '500 Errors Count',
+                    data: [2, 1, 1, 0, 0, 15, 30, 45, 10, 5, 2, 1, 1, 0, 8, 2, 1, 0, 1, 0, 0, 0, 1, 2],
+                    borderColor: chartColors.red,
+                    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } },
+                scales: {
+                    x: { title: { display: true, text: 'Time (Hour)' } },
+                    y: { title: { display: true, text: 'Error Count' } }
+                }
+            }
+        });
+
+        // 9. Categorical Chart: Bug Severity
+        new Chart(document.getElementById('categoricalChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Critical', 'High', 'Medium', 'Low'],
+                datasets: [{
+                    label: 'Open Issues Count',
+                    data: [5, 12, 45, 23],
+                    backgroundColor: [chartColors.red, chartColors.orange, chartColors.yellow, chartColors.green]
+                }]
+            },
+            options: {
+                indexAxis: 'y', // Horizontal Layout
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } },
+                scales: {
+                    x: { title: { display: true, text: 'Number of Tickets' } },
+                    y: { title: { display: true, text: 'Severity Level' } }
+                }
+            }
+        });
+
+        // 10. Bar Chart: Top Endpoints
+        new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: ['/api/v1/data', '/api/v1/login', '/api/v1/user', '/health'],
+                datasets: [{
+                    label: 'Hits (Millions)',
+                    data: [12.5, 8.2, 5.4, 15.1],
+                    backgroundColor: chartColors.blue
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } },
+                scales: {
+                    x: { title: { display: true, text: 'API Route' } },
+                    y: { title: { display: true, text: 'Requests (M)' } }
+                }
+            }
+        });
+
+        // 11. Line Chart: Real-time CPU
+        new Chart(document.getElementById('lineChart'), {
+            type: 'line',
+            data: {
+                labels: ['0s', '10s', '20s', '30s', '40s', '50s'],
+                datasets: [{
+                    label: 'Core 1 Usage %',
+                    data: [45, 52, 48, 85, 90, 60],
+                    borderColor: chartColors.blue,
+                    borderDash: [5, 5],
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } },
+                scales: {
+                    x: { title: { display: true, text: 'Time Window' } },
+                    y: { title: { display: true, text: 'Utilization (%)' }, max: 100 }
+                }
+            }
+        });
+
+        // 12. Variance Chart: Cloud Budget (Positive/Negative Bars)
+        new Chart(document.getElementById('varianceChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Dev Team', 'Marketing', 'Data Science', 'Ops'],
+                datasets: [{
+                    label: 'Budget Variance ($)',
+                    data: [-500, 1200, -2000, 500], // Negative = under budget, Positive = over
+                    backgroundColor: (ctx) => {
+                        const v = ctx.raw;
+                        return v >= 0 ? chartColors.red : chartColors.green;
+                    }
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } },
+                scales: {
+                    x: { title: { display: true, text: 'Department' } },
+                    y: { title: { display: true, text: 'Variance (USD)' } }
+                }
+            }
+        });
+
+        // 13. Distribution Chart: Payload Size (Histogram style)
+        new Chart(document.getElementById('distributionChart'), {
+            type: 'bar',
+            data: {
+                labels: ['0-1kb', '1-10kb', '10-100kb', '100kb-1mb', '>1mb'],
+                datasets: [{
+                    label: 'Request Count',
+                    data: [15000, 8000, 2000, 500, 50],
+                    backgroundColor: chartColors.purple,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } },
+                scales: {
+                    x: { title: { display: true, text: 'Payload Size Range' } },
+                    y: { title: { display: true, text: 'Frequency' } }
+                }
+            }
+        });
+
+        // 14. Snowfall Trend: Webhook Events (Scatter Time Series)
+        new Chart(document.getElementById('snowfallChart'), {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Webhook Events',
+                    data: Array.from({ length: 50 }, () => ({
+                        x: Math.random() * 60, // Minutes
+                        y: Math.random() * 1000 // Payload size or Duration
+                    })),
+                    backgroundColor: 'rgba(255, 255, 255, 0.7)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { title: { display: true, text: 'Time (min)' } },
+                    y: { title: { display: true, text: 'Payload Size (bytes)' } }
+                }
+            }
+        });
+
+        // --- Interaction Logic: Modal Expansion ---
+        const cards = document.querySelectorAll('.chart-card');
+        const backdrop = document.getElementById('backdrop');
+        let activeCard = null;
+        let placeholder = null;
+
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                if (card.classList.contains('expanded')) return;
+                expandCard(card);
+            });
+        });
+
+        backdrop.addEventListener('click', collapseActiveCard);
+
+        function expandCard(card) {
+            activeCard = card;
+
+            // Create placeholder to prevent layout shift
+            placeholder = document.createElement('div');
+            placeholder.className = 'chart-card placeholder-card';
+            placeholder.style.height = card.offsetHeight + 'px'; // Fix height
+            card.parentNode.insertBefore(placeholder, card);
+
+            // Animate expansion
+            card.classList.add('expanded');
+            backdrop.classList.add('active');
+
+            // Resize Chart Fonts
+            const chartInstance = Chart.getChart(card.querySelector('canvas'));
+            if (chartInstance) {
+                // Set bigger fonts
+                chartInstance.options.font = { size: 16, family: 'Inter' }; // Base font
+
+                // Specific updates if needed (Chart.js 3+ inherits well usually)
+                if (chartInstance.options.plugins.legend) {
+                    chartInstance.options.plugins.legend.labels = { font: { size: 16 } };
+                }
+
+                // Update specific scales if they exist
+                ['x', 'y'].forEach(axis => {
+                    if (chartInstance.options.scales[axis]) {
+                        chartInstance.options.scales[axis].ticks = {
+                            ...chartInstance.options.scales[axis].ticks,
+                            font: { size: 14 }
+                        };
+                        chartInstance.options.scales[axis].title = {
+                            ...chartInstance.options.scales[axis].title,
+                            font: { size: 16, weight: 'bold' }
+                        };
+                    }
+                });
+
+                chartInstance.resize();
+                chartInstance.update();
+            }
+        }
+
+        function collapseActiveCard() {
+            if (!activeCard) return;
+
+            const chartInstance = Chart.getChart(activeCard.querySelector('canvas'));
+            if (chartInstance) {
+                // Reset fonts (removing explicit overrides falls back to defaults)
+                delete chartInstance.options.font;
+
+                if (chartInstance.options.plugins.legend) {
+                    delete chartInstance.options.plugins.legend.labels; // Reverts to default
+                }
+
+                ['x', 'y'].forEach(axis => {
+                    if (chartInstance.options.scales[axis]) {
+                        // Reset ticks font
+                        // Note: We need to preserve other tick settings if they existed, but here we just reset the 'font' property override
+                        // A deeper reset might be safer but for this showcase clearing the font object is enough
+                        if (chartInstance.options.scales[axis].ticks) delete chartInstance.options.scales[axis].ticks.font;
+                        if (chartInstance.options.scales[axis].title) delete chartInstance.options.scales[axis].title.font;
+                    }
+                });
+
+                chartInstance.update();
+            }
+
+            activeCard.classList.remove('expanded');
+            backdrop.classList.remove('active');
+
+            // Remove placeholder
+            if (placeholder) {
+                placeholder.remove();
+                placeholder = null;
+            }
+
+            if (chartInstance) chartInstance.resize();
+
+            activeCard = null;
+        }
+
+        // Close on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') collapseActiveCard();
+        });
+
+    </script>
+</body>
+
+</html>
