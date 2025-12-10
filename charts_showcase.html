@@ -482,6 +482,56 @@
             </div>
         </div>
 
+        <!-- 15. Radar Chart -->
+        <div class="chart-card">
+            <h2>Microservice Health (Radar)</h2>
+            <div class="chart-container">
+                <canvas id="radarChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Comparing Service health across 5 dimensions: Reliability, Latency, Throughput,
+                    Cost, Maintainability.</div>
+                <div class="tags-row">
+                    <span class="tag compare">Compare</span>
+                    <span class="tag data-type">Multivariate</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'radar'</div>
+            </div>
+        </div>
+
+        <!-- 16. Bubble Chart -->
+        <div class="chart-card">
+            <h2>DB Query Analysis (Bubble)</h2>
+            <div class="chart-container">
+                <canvas id="bubbleChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Query performance map: Frequency (X), Execution Time (Y), and CPU Cost (Size).
+                </div>
+                <div class="tags-row">
+                    <span class="tag rel">See Relationship</span>
+                    <span class="tag data-type">Multivariate</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'bubble'</div>
+            </div>
+        </div>
+
+        <!-- 17. Polar Area Chart -->
+        <div class="chart-card">
+            <h2>Security Vulnerabilities (Polar)</h2>
+            <div class="chart-container">
+                <canvas id="polarChart"></canvas>
+            </div>
+            <div class="chart-footer">
+                <div class="footer-desc">Count of detected security issues categorized by vulnerability type.</div>
+                <div class="tags-row">
+                    <span class="tag comp">See Composition</span>
+                    <span class="tag data-type">Categorical</span>
+                </div>
+                <div class="tech-name">Chart.js Type: 'polarArea'</div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -832,17 +882,17 @@
             }
         });
 
-        // 14. Snowfall Trend: Webhook Events (Scatter Time Series)
+        // 14. Snowfall Trend Chart: Webhook Events
         new Chart(document.getElementById('snowfallChart'), {
             type: 'scatter',
             data: {
                 datasets: [{
-                    label: 'Webhook Events',
+                    label: 'Webhook Payloads',
                     data: Array.from({ length: 50 }, () => ({
-                        x: Math.random() * 60, // Minutes
-                        y: Math.random() * 1000 // Payload size or Duration
+                        x: Math.random() * 60, // Time (min)
+                        y: Math.random() * 5000 + 100 // Size (bytes)
                     })),
-                    backgroundColor: 'rgba(255, 255, 255, 0.7)'
+                    backgroundColor: chartColors.blue
                 }]
             },
             options: {
@@ -851,6 +901,124 @@
                 scales: {
                     x: { title: { display: true, text: 'Time (min)' } },
                     y: { title: { display: true, text: 'Payload Size (bytes)' } }
+                }
+            }
+        });
+
+        // 15. Radar Chart: Microservice Health
+        new Chart(document.getElementById('radarChart'), {
+            type: 'radar',
+            data: {
+                labels: ['Reliability', 'Latency', 'Throughput', 'Cost', 'Maintainability'],
+                datasets: [
+                    {
+                        label: 'Service A (Legacy)',
+                        data: [65, 59, 90, 81, 56],
+                        fill: true,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgb(255, 99, 132)',
+                        pointBackgroundColor: 'rgb(255, 99, 132)',
+                    },
+                    {
+                        label: 'Service B (New)',
+                        data: [95, 88, 70, 50, 95],
+                        fill: true,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgb(54, 162, 235)',
+                        pointBackgroundColor: 'rgb(54, 162, 235)',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top' }
+                },
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(255, 255, 255, 0.2)' },
+                        grid: { color: 'rgba(255, 255, 255, 0.2)' },
+                        pointLabels: { color: '#eaeaea', font: { size: 12 } },
+                        ticks: { display: false } // Hide numeric ticks for cleaner look
+                    }
+                }
+            }
+        });
+
+        // 16. Bubble Chart: DB Query Analysis
+        new Chart(document.getElementById('bubbleChart'), {
+            type: 'bubble',
+            data: {
+                datasets: [{
+                    label: 'Query Profile',
+                    data: [
+                        { x: 200, y: 15, r: 5 },   // Frequent, Fast, Low CPU
+                        { x: 50, y: 200, r: 15 },  // Rare, Slow, Med CPU
+                        { x: 20, y: 500, r: 25 },  // Very Rare, Very Slow, High CPU
+                        { x: 300, y: 10, r: 4 },
+                        { x: 150, y: 50, r: 8 },
+                        { x: 80, y: 120, r: 10 },
+                        { x: 10, y: 800, r: 30 }   // The "Killer" query
+                    ],
+                    backgroundColor: chartColors.orange
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return `Freq: ${context.raw.x}, Time: ${context.raw.y}ms, CPU: ${context.raw.r}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Frequency (calls/min)' },
+                        min: 0
+                    },
+                    y: {
+                        title: { display: true, text: 'Avg Execution Time (ms)' },
+                        min: 0
+                    }
+                }
+            }
+        });
+
+        // 17. Polar Area Chart: Security Vulnerabilities
+        new Chart(document.getElementById('polarChart'), {
+            type: 'polarArea',
+            data: {
+                labels: ['SQL Injection', 'XSS', 'Broken Auth', 'Misconfig', 'XML External'],
+                datasets: [{
+                    label: 'Vulnerability Count',
+                    data: [11, 16, 7, 14, 4],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.5)',
+                        'rgba(54, 162, 235, 0.5)',
+                        'rgba(255, 206, 86, 0.5)',
+                        'rgba(75, 192, 192, 0.5)',
+                        'rgba(153, 102, 255, 0.5)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'right' }
+                },
+                scales: {
+                    r: {
+                        grid: { color: 'rgba(255, 255, 255, 0.2)' },
+                        ticks: { backdropColor: 'transparent', color: '#eaeaea' }
+                    }
                 }
             }
         });
