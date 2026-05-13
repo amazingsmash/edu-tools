@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HPI Theory Videos & Vocabulary</title>
+  <style>
+    :root {
+      --blue: #0066A1;
+      --blue-dark: #05476D;
+      --blue-soft: #E5EFF5;
+      --orange: #FFA100;
+      --orange-soft: #FFF5E5;
+      --gray: #565A5C;
+      --gray-dark: #2D3133;
+      --gray-5: #F6F7F7;
+      --gray-20: #DDDEDE;
+      --white: #FFFFFF;
+      --shadow: 0 12px 30px rgba(45, 49, 51, 0.08);
+      --radius: 8px;
+      --font: Arial, Helvetica, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--white);
+      color: var(--gray-dark);
+      font-family: var(--font);
+      letter-spacing: 0;
+    }
+
+    a { color: inherit; }
+
+    .top {
+      border-bottom: 1px solid var(--gray-20);
+      background: var(--white);
+    }
+
+    .top-inner {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 22px 24px;
+    }
+
+    .brand {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      min-width: 260px;
+    }
+
+    .university-logo {
+      width: 54px;
+      height: 54px;
+      object-fit: contain;
+      flex: 0 0 auto;
+    }
+
+    .brand h1 {
+      margin: 0;
+      color: var(--blue-dark);
+      font-size: 18px;
+      line-height: 1.15;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--gray);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .nav {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .nav a {
+      flex: 0 0 auto;
+      padding: 9px 11px;
+      border-radius: 6px;
+      color: var(--blue-dark);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .nav a:hover {
+      background: var(--blue-soft);
+    }
+
+    .sections {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 30px 24px 70px;
+    }
+
+    .section {
+      display: grid;
+      grid-template-columns: 285px minmax(0, 1fr);
+      gap: 34px;
+      padding: 34px 0;
+      border-top: 1px solid var(--gray-20);
+    }
+
+    .section:first-child {
+      border-top: 0;
+    }
+
+    .section-title {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+    }
+
+    .number {
+      display: inline-grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      margin-bottom: 14px;
+      border-radius: 6px;
+      background: var(--blue);
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .section h3 {
+      margin: 0;
+      color: var(--blue-dark);
+      font-size: 29px;
+      line-height: 1.08;
+    }
+
+    .section-title p {
+      margin: 12px 0 0;
+      color: var(--gray);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .videos {
+      display: grid;
+      gap: 14px;
+    }
+
+    .tabs {
+      display: inline-flex;
+      gap: 4px;
+      margin-bottom: 16px;
+      padding: 4px;
+      border: 1px solid var(--gray-20);
+      border-radius: var(--radius);
+      background: var(--gray-5);
+    }
+
+    .tab-button {
+      min-height: 34px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--gray);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .tab-button.active {
+      background: var(--blue);
+      color: var(--white);
+    }
+
+    .tab-panel[hidden] {
+      display: none;
+    }
+
+    .video {
+      border: 1px solid var(--gray-20);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .video summary {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) auto;
+      gap: 13px;
+      align-items: center;
+      padding: 16px;
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .video summary::-webkit-details-marker { display: none; }
+
+    .play {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .play svg {
+      width: 17px;
+      height: 17px;
+      transform: translateX(1px);
+    }
+
+    .video[open] .play {
+      background: var(--orange);
+      color: var(--gray-dark);
+    }
+
+    .video-title {
+      display: block;
+      color: var(--blue-dark);
+      font-size: 17px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .url {
+      display: block;
+      margin-top: 5px;
+      overflow: hidden;
+      color: var(--gray);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .open-link {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      min-height: 34px;
+      padding: 0 10px;
+      border: 1px solid var(--gray-20);
+      border-radius: 6px;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .open-link:hover {
+      border-color: var(--blue);
+      background: var(--blue-soft);
+    }
+
+    .open-link svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .vocab {
+      padding: 0 16px 17px 71px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid #c7dbe8;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue-dark);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .video[open] .chip:nth-child(3n) {
+      border-color: #ffd58a;
+      background: var(--orange-soft);
+      color: #7c5207;
+    }
+
+    .resources {
+      display: grid;
+      gap: 10px;
+    }
+
+    .resource {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border: 1px solid var(--gray-20);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: var(--shadow);
+    }
+
+    .resource strong {
+      display: block;
+      color: var(--blue-dark);
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .resource span {
+      display: block;
+      margin-top: 4px;
+      color: var(--gray);
+      font-size: 12px;
+      word-break: break-word;
+    }
+
+    @media (max-width: 900px) {
+      .top-inner {
+        display: grid;
+      }
+
+      .section {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      .section-title {
+        position: static;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .top-inner,
+      .sections {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .video summary {
+        grid-template-columns: 38px minmax(0, 1fr);
+      }
+
+      .resource {
+        display: block;
+      }
+
+      .open-link {
+        grid-column: 2;
+        justify-self: start;
+      }
+
+      .vocab {
+        padding-left: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand">
+        <img class="university-logo" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Logo_ULPGC_%282019%29.svg" alt="ULPGC logo">
+        <div>
+          <h1>HPI Theory Videos & Vocabulary</h1>
+          <p>Universidad de Las Palmas de Gran Canaria</p>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Sections">
+        <a href="#company-management">Company Management</a>
+        <a href="#ux-analysis">UX Analysis</a>
+        <a href="#technical-projects">Technical Projects</a>
+        <a href="#scientific-literacy">Scientific Literacy</a>
+        <a href="#data-analysis">Data Analysis</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="sections" id="sections"></div>
+  </main>
+
+  <script>
+    const sections = [
+      {
+        id: "company-management",
+        name: "Company Management",
+        description: "Interviewing, professional communication, and negotiation language for business settings.",
+        videos: [
+          { title: "Top Interview Tips: Body Language and Etiquette", url: "https://www.youtube.com/watch?v=HG68Ymazo18", vocabulary: ["Interview", "Body language", "Etiquette", "Posture", "Eye contact", "Follow up", "Nerves", "Small talk", "Current events", "Introductions", "Experience", "Role", "Honest", "Team building", "Project management", "Feedback", "Strengths", "Unique", "Personality", "Goals", "Polite", "Confident", "Unnecessary movements", "Questions for employer", "Hiring manager", "Lasting impression"] },
+          { title: "Top Interview Tips: Competency Answers", url: "https://www.youtube.com/watch?v=3bTZgO4aAhI", vocabulary: ["Responsible", "Collaborate", "Initiative", "Leadership", "Lead", "Resolved", "Problem-solving", "Measure", "Measurable", "Result", "Team player", "Ownership", "Self-confidence", "Credibility", "Solution", "Communication", "Storytelling"] },
+          { title: "Salary Negotiation", url: "https://youtu.be/4VBjjkbEthY?si=s01CdD8kKqzb0Y5m", vocabulary: ["Salary", "Negotiation", "Value", "Confidence", "Research", "Market rate", "Benefits", "Compensation", "Offer", "Counteroffer", "Communication", "Timing", "Strategy", "Employer", "Proposal", "Flexibility", "Expertise", "Leverage", "Expectations", "Agreement"] }
+        ],
+        resources: []
+      },
+      {
+        id: "ux-analysis",
+        name: "UX Analysis",
+        description: "Interface principles, usability measurement, and the UI element vocabulary used in product analysis.",
+        videos: [
+          { title: "Eight Golden Rules of UI Design", url: "https://www.youtube.com/watch?v=BH_sJshyYrk", vocabulary: ["User Interface (UI)", "User Experience (UX)", "Consistency", "Shortcuts", "Feedback", "Dialog Closure", "Error Handling", "Reversal of Actions", "Locus of Control", "Memory Load", "Usability", "Aesthetics", "Cognitive Load", "Flow of Interaction", "Modal Dialogs", "Hierarchy of Information", "Navigation Patterns", "Task Efficiency"] },
+          { title: "The System Usability Scale (SUS)", url: "https://www.youtube.com/watch?v=UMv_OW9__qY&t=7s", vocabulary: ["Likert Scale", "Quantitative Usability Testing", "Positive and Negative Statements", "Global Usability Scale", "Confidence Interval", "Percentile", "Reliability", "Completion Rate", "Task Times", "Bias", "Average Score", "Subjective Measure", "Performance Metrics", "Usability Benchmarking", "Grading System", "Post-Test Questionnaire", "Survey Instrument", "User Interaction", "Subjective Satisfaction"] },
+          { title: "27 Essential UI Elements", url: "https://www.youtube.com/watch?v=EsHA6k0x8wA", vocabulary: ["Primary buttons", "Secondary buttons", "Tertiary buttons", "Toggles", "Segmented controls", "Icons", "Checkboxes", "Radio buttons", "Drop-down lists", "Text fields", "Date pickers", "Search fields", "Pagination", "Tabs", "Sliders", "Tags", "Breadcrumbs", "Carousels", "Notifications", "Modals", "Menus", "Cards", "Progress bars", "Loaders", "Tooltips", "Hamburger menus", "Accordions"] }
+        ],
+        resources: [
+          { title: "Ben Shneiderman's Eight Golden Rules", url: "https://www.cs.umd.edu/users/ben/goldenrules.html" },
+          { title: "GeeksforGeeks: Eight Golden Rules of Interface Design", url: "https://www.geeksforgeeks.org/ben-shneiderman-eight-golden-rules-of-interface-design-human-computer-interaction/" }
+        ]
+      },
+      {
+        id: "technical-projects",
+        name: "Technical Projects",
+        description: "Core technical vocabulary for algorithms, version control, development environments, and project work.",
+        videos: [
+          { title: "What Is an Algorithm?", url: "https://www.youtube.com/watch?v=cuhLSGGV-1k", vocabulary: ["Algorithm", "Input", "Output", "Feasibility", "Finiteness", "Language Independence", "Ambiguity", "Step-by-Step", "Conditional Statements", "Iterative Statements", "Problem Domain", "Analysis", "Priori Analysis", "Posterior Analysis", "Time Complexity", "Space Complexity", "Big-O Notation", "Implementation", "Programming Language", "Pseudo Code", "Execution", "Variables", "Constant Values", "Function Call", "Natural Language", "Compiler"] },
+          { title: "Git/GitHub/GitLab", url: "https://www.youtube.com/watch?v=wpISo9TNjfU", vocabulary: ["Version control system", "Git", "GitHub", "GitLab", "Repository", "Clone", "Branch", "Commit", "Push", "Merge", "Merge conflict", "Pull request", "Snapshot", "Trunk-based development", "Main branch", "DevOps", "Automated testing", "Deployment", "Backup", "Code base", "Historical backup", "Local machine", "Command line", "Open source", "Flexible", "Integrated", "Cloud-hosted", "Review", "Feature", "Device", "Snapshot"] },
+          { title: "What Is an IDE?", url: "https://youtu.be/0ArUv3VqkZs?si=W2mvHMWMeyLTzPo1", vocabulary: ["IDE", "Text Editor", "Debugger", "Compiler", "Programming", "Code", "Software", "Development", "Application", "Programming Language", "Atom", "Sublime Text", "IntelliJ", "JetBrains", "Eclipse", "NetBeans", "Visual Studio", "Xcode", "Terminal", "Source Code", "Script", "Compilation", "Debugging", "Variable", "Console", "Breakpoint"] }
+        ],
+        resources: [
+          { title: "Top 25 Algorithms Every Programmer Should Know", url: "https://medium.com/techie-delight/top-25-algorithms-every-programmer-should-know-373246b4881b" },
+          { title: "VisuAlgo", url: "https://visualgo.net/en" }
+        ]
+      },
+      {
+        id: "scientific-literacy",
+        name: "Scientific Literacy",
+        description: "Scientific method, critical reading, source evaluation, and research vocabulary.",
+        videos: [
+          { title: "The Scientific Method", url: "https://www.youtube.com/watch?v=N6IAzlugWw0", vocabulary: ["Scientific method", "Observation", "Hypothesis", "Testable explanation", "Prediction", "Experiment", "Variable", "Control", "Reproducible", "Iterate", "Refine", "Skepticism", "Foundation", "Evidence", "Critical thinking", "Data", "Analyze", "Result", "Refutation", "Reasoning"] },
+          { title: "How to Read a Scientific Paper", url: "https://www.youtube.com/watch?v=jrjz0QyvON8", vocabulary: ["Scientific paper", "Online research", "Red flags", "Peer review", "Abstract", "Summary", "Key questions", "Findings", "Conflicts of interest", "Sample size", "Randomization", "Double-blinded experiments", "Control group", "Misinformation", "Critical thinking", "Scientific process", "Data interpretation", "Source verification", "Social media", "Logical fallacies", "Bias detection"] },
+          { title: "How to Read a Scientific Paper: Efficiently and Critically", url: "https://www.youtube.com/watch?v=lXJeU2dzzWo&t=80s", vocabulary: ["Scientific paper", "Critical reading", "Abstract", "Introduction", "Methods", "Results", "Discussion", "Conclusions", "Figures", "Tables", "Literature search", "Keywords", "Experimental design", "Controls", "Randomization", "Replication", "Statistical tests", "Bias", "Operator error", "Findings", "Implications", "Practical applications", "Research questions", "Hypotheses", "Data analysis", "Citations", "Bibliography", "Reading strategy", "Relevance", "Efficient reading", "Critical thinking"] }
+        ],
+        resources: [
+          { title: "ORCID", url: "https://orcid.org/" },
+          { title: "Web of Science", url: "https://www.webofscience.com/wos/alldb/basic-search" },
+          { title: "Overleaf", url: "https://www.overleaf.com/login?" }
+        ]
+      },
+      {
+        id: "data-analysis",
+        name: "Data Analysis",
+        description: "Data visualization, spreadsheet workflows, chart vocabulary, and AI coding assistant terminology.",
+        videos: [
+          { title: "The Importance of Data Visualization", url: "https://www.youtube.com/watch?v=xk_ZLtWlXIE&t=1s", vocabulary: ["Data visualization", "Chart", "Graphs", "Trends", "Regression", "Gaps", "Outliers", "Alignment", "Storytelling", "Context", "Insights", "Mirroring", "Emotion", "Trustworthiness", "Purpose", "Content", "Structure", "Format", "Audience", "Focus", "Pie charts", "Correlation", "Filters", "Clutter", "Infographic", "Information overload", "Patterns", "Clarity", "Engagement"] },
+          { title: "Advanced Excel Charts", url: "https://www.youtube.com/watch?v=lUjZa4YBixI", vocabulary: ["Stacked bar chart", "Column chart with percentage change", "Comparative distribution chart", "Waterfall chart", "Donut chart", "Progress chart", "Clustered charts", "Trend chart", "Categorical chart", "Bar chart", "Line chart", "Variance chart", "Distribution chart", "Snowfall trend chart"] },
+          { title: "Working with Spreadsheets", url: "https://www.youtube.com/watch?v=PdJzy956wo4", vocabulary: ["Table", "Field", "Header", "Record", "Entry", "Pivot Table", "Slicer", "Chart"] },
+          { title: "GitHub Copilot (Coding Agents)", url: "https://youtu.be/RFk5M70S2s8", vocabulary: ["GitHub", "Copilot", "AI Coding Assistant", "Pair Programmer", "Autocomplete", "Boilerplate Code", "Code Suggestions", "Copilot Chat", "Command Line / Terminal Help", "Copilot Spaces", "PR Descriptions", "Pull Requests", "Knowledge Bases", "OpenAI's Codex", "Fine-tuned", "Public Code"] }
+        ],
+        resources: [
+          { title: "Kaggle", url: "https://www.kaggle.com/" },
+          { title: "Data.gov", url: "https://www.data.gov/" },
+          { title: "UCI Machine Learning Repository", url: "https://archive.ics.uci.edu/ml" },
+          { title: "EU Open Data Portal", url: "https://data.europa.eu/euodp/en/home" },
+          { title: "World Bank Data", url: "https://data.worldbank.org/" },
+          { title: "UN Data", url: "https://data.un.org/" },
+          { title: "OpenML", url: "https://www.openml.org/" },
+          { title: "Zenodo", url: "https://zenodo.org/" },
+          { title: "Figshare", url: "https://figshare.com/" },
+          { title: "NASA Earthdata", url: "https://earthdata.nasa.gov/" },
+          { title: "Matplotlib plot types", url: "https://matplotlib.org/stable/plot_types/index.html" },
+          { title: "MATLAB plot types", url: "https://www.mathworks.com/help/matlab/creating_plots/types-of-matlab-plots.html" }
+        ]
+      }
+    ];
+
+    const playIcon = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.6v12.8L18.5 12 8 5.6Z"></path></svg>';
+    const openIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M8 7h9v9"></path></svg>';
+
+    document.querySelector("#sections").innerHTML = sections.map((section, sectionIndex) => `
+      <section class="section" id="${section.id}">
+        <div class="section-title">
+          <span class="number">${sectionIndex + 1}</span>
+          <h3>${section.name}</h3>
+          <p>${section.description}</p>
+        </div>
+        <div>
+          <div class="tabs" role="tablist" aria-label="${section.name} resources">
+            <button class="tab-button active" type="button" role="tab" aria-selected="true" data-section="${section.id}" data-tab="videos">Videos</button>
+            <button class="tab-button" type="button" role="tab" aria-selected="false" data-section="${section.id}" data-tab="resources">Resources</button>
+          </div>
+          <div class="tab-panel" data-panel="${section.id}-videos">
+            <div class="videos">
+              ${section.videos.map((video, videoIndex) => `
+                <details class="video" ${videoIndex === 0 ? "open" : ""}>
+                  <summary>
+                    <span class="play">${playIcon}</span>
+                    <span>
+                      <span class="video-title">${video.title}</span>
+                      <span class="url">${video.url}</span>
+                    </span>
+                    <a class="open-link" href="${video.url}" target="_blank" rel="noopener">${openIcon} Open</a>
+                  </summary>
+                  <div class="vocab">
+                    <div class="chips">
+                      ${video.vocabulary.map((term) => `<span class="chip">${term}</span>`).join("")}
+                    </div>
+                  </div>
+                </details>
+              `).join("")}
+            </div>
+          </div>
+          <div class="tab-panel" data-panel="${section.id}-resources" hidden>
+            <div class="resources">
+              ${(section.resources.length ? section.resources : [{ title: "No additional resources in the source slides", url: "" }]).map((resource) => `
+                <div class="resource">
+                  <span>
+                    <strong>${resource.title}</strong>
+                    ${resource.url ? `<span>${resource.url}</span>` : ""}
+                  </span>
+                  ${resource.url ? `<a class="open-link" href="${resource.url}" target="_blank" rel="noopener">${openIcon} Open</a>` : ""}
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        </div>
+      </section>
+    `).join("");
+
+    document.addEventListener("click", (event) => {
+      if (event.target.closest(".open-link")) event.stopPropagation();
+      const tab = event.target.closest(".tab-button");
+      if (!tab) return;
+      const sectionId = tab.dataset.section;
+      const selectedTab = tab.dataset.tab;
+      document.querySelectorAll(`.tab-button[data-section="${sectionId}"]`).forEach((button) => {
+        const isActive = button.dataset.tab === selectedTab;
+        button.classList.toggle("active", isActive);
+        button.setAttribute("aria-selected", String(isActive));
+      });
+      document.querySelectorAll(`[data-panel^="${sectionId}-"]`).forEach((panel) => {
+        panel.hidden = panel.dataset.panel !== `${sectionId}-${selectedTab}`;
+      });
+    });
+  </script>
+</body>
+</html>
