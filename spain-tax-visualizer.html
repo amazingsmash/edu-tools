@@ -493,6 +493,9 @@
     .top-nav { display: flex; align-items: center; gap: clamp(12px, 3vw, 42px); }
     .top-nav a { text-decoration: none; color: #51627c; font-size: .86rem; font-weight: 650; }
     .top-nav a:hover, .top-nav a:focus-visible { color: var(--accent); }
+    .header-actions { display: flex; align-items: center; gap: clamp(12px, 3vw, 38px); }
+    .language-toggle { cursor: pointer; border: 1px solid #c8dced; border-radius: 999px; background: #fff; color: #165b91; font: 750 .8rem var(--font-stack); padding: 8px 13px; min-width: 51px; }
+    .language-toggle:hover, .language-toggle:focus-visible { background: #eaf5fc; border-color: #65acd6; outline-offset: 3px; }
     .panel { background: #fff; border: 1px solid #e1e8f1; box-shadow: var(--shadow); padding: clamp(22px, 3vw, 36px); backdrop-filter: none; scroll-margin-top: 24px; }
     .section-title { align-items: center; margin-bottom: 25px; gap: 15px; }
     h2 { color: #173354; font-size: clamp(1.4rem, 2.5vw, 1.95rem); letter-spacing: -.035em; margin: 0; font-weight: 750; }
@@ -552,7 +555,7 @@
       .site-header { min-height: 72px; }
       .brand { min-width: 0; }
       .brand img { width: 35px; height: 36px; }
-      .top-nav { gap: 12px; }
+      .top-nav, .header-actions { gap: 12px; }
       .top-nav a { font-size: .7rem; }
       .panel { padding: 21px 18px; }
       .input-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
@@ -574,61 +577,70 @@
   <div id="tooltip" role="tooltip" aria-hidden="true"></div>
   <main>
     <header class="site-header">
-      <a class="brand" href="index.html" aria-label="Back to Edu Tools">
-        <img src="assets/ulpgc-logo.svg" alt="ULPGC logo" width="42" height="43">
-        <span class="brand-text"><strong>ULPGC</strong><small>Tax Visualizer</small></span>
+      <a class="brand" href="index.html" aria-label="Back to Edu Tools" data-i18n-aria="backToTools">
+        <img src="assets/ulpgc-logo.svg" alt="ULPGC logo" data-i18n-alt="ulpgcLogo" width="42" height="43">
+        <span class="brand-text"><strong>ULPGC</strong><small data-i18n="appName">Tax Visualizer</small></span>
       </a>
-      <nav class="top-nav" aria-label="Main navigation">
-        <a href="#inputs">Inputs</a>
-        <a href="#brackets">Tax brackets</a>
-        <a href="#summary">Summary</a>
-      </nav>
+      <div class="header-actions">
+        <nav class="top-nav" aria-label="Main navigation" data-i18n-aria="mainNavigation">
+          <a href="#inputs" data-i18n="inputs">Inputs</a>
+          <a href="#brackets" data-i18n="taxBracketsNav">Tax brackets</a>
+          <a href="#summary" data-i18n="summary">Summary</a>
+        </nav>
+        <button type="button" id="language-toggle" class="language-toggle" aria-label="Switch to Spanish">ES</button>
+      </div>
     </header>
 
     <section class="panel" id="inputs">
       <div class="section-title">
-        <h2>Inputs</h2>
-        <span>Customize your scenario</span>
+        <h2 data-i18n="inputs">Inputs</h2>
+        <span data-i18n="customizeScenario">Customize your scenario</span>
       </div>
       <div class="input-grid">
         <div class="input-item">
           <label for="grossSalary" class="tooltip-source" tabindex="0"
-                 data-tooltip-en="Gross salary: total annual earnings before deductions.">
+                 data-tooltip-en="Gross salary: total annual earnings before deductions."
+                 data-tooltip-es="Salario bruto: ingresos anuales totales antes de las deducciones." data-i18n="grossSalaryInput">
             Gross salary (€)
           </label>
           <input type="number" id="grossSalary" min="0" step="100" value="45000">
         </div>
         <div class="input-item">
           <label for="employerSs" class="tooltip-source" tabindex="0"
-                 data-tooltip-en="Employer social security: contribution paid by the company on top of gross salary.">
+                 data-tooltip-en="Employer social security: contribution paid by the company on top of gross salary."
+                 data-tooltip-es="Seguridad Social de la empresa: cotización que paga la empresa además del salario bruto." data-i18n="employerSSInput">
             Employer Social Security (% of gross)
           </label>
           <input type="number" id="employerSs" min="0" step="0.01" value="30.57">
         </div>
         <div class="input-item">
           <label for="employeeSs" class="tooltip-source" tabindex="0"
-                 data-tooltip-en="Employee social security: part of the salary withheld for healthcare and pension.">
+                 data-tooltip-en="Employee social security: part of the salary withheld for healthcare and pension."
+                 data-tooltip-es="Seguridad Social del trabajador: parte del salario destinada a sanidad y pensiones." data-i18n="employeeSSInput">
             Employee Social Security (% of gross)
           </label>
           <input type="number" id="employeeSs" min="0" step="0.01" value="6.48">
         </div>
         <div class="input-item">
           <label for="personalAllowance" class="tooltip-source" tabindex="0"
-                 data-tooltip-en="Personal allowance: amount exempt from Income Tax (IRPF is the Spanish equivalent) due to personal circumstances.">
+                 data-tooltip-en="Personal allowance: amount exempt from Income Tax (IRPF is the Spanish equivalent) due to personal circumstances."
+                 data-tooltip-es="Mínimo personal: importe exento de IRPF según las circunstancias personales." data-i18n="allowanceInput">
             Personal allowance (€/year)
           </label>
           <input type="number" id="personalAllowance" min="0" step="50" value="5550">
         </div>
         <div class="input-item">
           <label for="vatRate" class="tooltip-source" tabindex="0"
-                 data-tooltip-en="VAT share: average portion of net salary spent on value-added tax.">
+                 data-tooltip-en="VAT share: average portion of net salary spent on value-added tax."
+                 data-tooltip-es="IVA: proporción media del salario neto destinada al impuesto sobre el valor añadido." data-i18n="vatInput">
             VAT as % of net
           </label>
           <input type="number" id="vatRate" min="0" step="0.1" value="10.7">
         </div>
         <div class="input-item">
           <label for="indirectRate" class="tooltip-source" tabindex="0"
-                 data-tooltip-en="Other indirect taxes: fuel, electricity, or special taxes borne after net salary.">
+                 data-tooltip-en="Other indirect taxes: fuel, electricity, or special taxes borne after net salary."
+                 data-tooltip-es="Otros impuestos indirectos: gravámenes sobre combustible, electricidad u otros productos pagados con el salario neto." data-i18n="indirectInput">
             Other indirect taxes as % of net
           </label>
           <input type="number" id="indirectRate" min="0" step="0.1" value="1.5">
@@ -638,33 +650,37 @@
 
     <section class="panel chart-card" id="brackets">
       <div class="section-title">
-        <h2>Income Tax Brackets (IRPF in Spain)</h2>
-        <span>Adjust thresholds and rates below</span>
+        <h2 data-i18n="bracketsHeading">Income Tax Brackets (IRPF in Spain)</h2>
+        <span data-i18n="adjustThresholds">Adjust thresholds and rates below</span>
       </div>
       <div class="country-picker">
         <label for="countryPicker" class="tooltip-source" tabindex="0"
-               data-tooltip-en="Country: choose a country to load its default income tax brackets.">
+               data-tooltip-en="Country: choose a country to load its default income tax brackets."
+               data-tooltip-es="País: elige un país para cargar sus tramos predeterminados del impuesto sobre la renta." data-i18n="country">
           Country
         </label>
         <select id="countryPicker" class="tooltip-source" tabindex="0"
-                data-tooltip-en="Country: choose a country to load its default income tax brackets.">
-          <option value="Custom" selected>Custom</option>
-          <option value="Spain">Spain</option>
-          <option value="USA">USA</option>
-          <option value="Germany">Germany</option>
-          <option value="France">France</option>
+                data-tooltip-en="Country: choose a country to load its default income tax brackets."
+                data-tooltip-es="País: elige un país para cargar sus tramos predeterminados del impuesto sobre la renta.">
+          <option value="Custom" selected data-i18n="custom">Custom</option>
+          <option value="Spain" data-i18n="spain">Spain</option>
+          <option value="USA" data-i18n="usa">USA</option>
+          <option value="Germany" data-i18n="germany">Germany</option>
+          <option value="France" data-i18n="france">France</option>
         </select>
       </div>
       <div class="income-tax-layout">
-        <svg id="income-tax-chart" viewBox="0 0 100 60" role="img" aria-label="Income tax brackets visualization"></svg>
+        <svg id="income-tax-chart" viewBox="0 0 100 60" role="img" aria-label="Income tax brackets visualization" data-i18n-aria="incomeTaxChartAria"></svg>
         <div class="tax-table-card">
           <div class="table-controls">
             <button type="button" id="add-bracket" class="tooltip-source" tabindex="0"
-                    data-tooltip-en="Add bracket: insert a new tax bracket that you can customise.">
+                    data-tooltip-en="Add bracket: insert a new tax bracket that you can customise."
+                    data-tooltip-es="Añadir tramo: inserta un tramo impositivo que puedes personalizar." data-i18n="addBracket">
               Add bracket
             </button>
             <button type="button" id="reset-brackets" class="tooltip-source" tabindex="0"
-                    data-tooltip-en="Reset defaults: restore the original bracket configuration.">
+                    data-tooltip-en="Reset defaults: restore the original bracket configuration."
+                    data-tooltip-es="Restablecer valores: recupera la configuración original de los tramos." data-i18n="resetDefaults">
               Reset defaults
             </button>
           </div>
@@ -674,25 +690,29 @@
                 <tr>
                   <th>
                     <span class="tooltip-source" tabindex="0"
-                          data-tooltip-en="Min (&euro;): lowest taxable amount covered by this bracket.">
+                          data-tooltip-en="Min (&euro;): lowest taxable amount covered by this bracket."
+                          data-tooltip-es="Mín (€): importe imponible más bajo incluido en este tramo." data-i18n="minimum">
                       Min (&euro;)
                     </span>
                   </th>
                   <th>
                     <span class="tooltip-source" tabindex="0"
-                          data-tooltip-en="Max (&euro;): highest taxable amount in this bracket (leave blank for no upper limit).">
+                          data-tooltip-en="Max (&euro;): highest taxable amount in this bracket (leave blank for no upper limit)."
+                          data-tooltip-es="Máx (€): importe imponible más alto de este tramo; déjalo vacío si no hay límite superior." data-i18n="maximum">
                       Max (&euro;)
                     </span>
                   </th>
                   <th>
                     <span class="tooltip-source" tabindex="0"
-                          data-tooltip-en="Rate (%): percentage of tax applied within this bracket (IRPF is the Spanish equivalent).">
+                          data-tooltip-en="Rate (%): percentage of tax applied within this bracket (IRPF is the Spanish equivalent)."
+                          data-tooltip-es="Tipo (%): porcentaje de impuesto aplicado dentro de este tramo." data-i18n="rate">
                       Rate (%)
                     </span>
                   </th>
                   <th>
                     <span class="tooltip-source" tabindex="0"
-                          data-tooltip-en="Actions: remove brackets you no longer need.">
+                          data-tooltip-en="Actions: remove brackets you no longer need."
+                          data-tooltip-es="Acciones: elimina los tramos que ya no necesites." data-i18n="actions">
                       Actions
                     </span>
                   </th>
@@ -703,87 +723,87 @@
           </div>
         </div>
       </div>
-      <div class="chart-caption">
+      <div class="chart-caption" data-i18n="chartCaption">
         Each bar shows the marginal rate for that bracket. Highlighted areas show the portion of your taxable income that falls within each bracket.
       </div>
     </section>
 
     <section class="panel">
       <div class="section-title">
-        <h2>Salary Journey</h2>
-        <span>Track money from employer to disposable income</span>
+        <h2 data-i18n="salaryJourney">Salary Journey</h2>
+        <span data-i18n="trackMoney">Track money from employer to disposable income</span>
       </div>
       <div class="stacked-container">
         <div>
-          <h3 class="bar-title">From company cost to employee gross</h3>
-          <div class="stacked-bar" id="company-cost-bar" aria-label="Composition of company total cost"></div>
+          <h3 class="bar-title" data-i18n="companyToGross">From company cost to employee gross</h3>
+          <div class="stacked-bar" id="company-cost-bar" aria-label="Composition of company total cost" data-i18n-aria="companyBarAria"></div>
         </div>
         <div>
-          <h3 class="bar-title">From gross salary to net salary</h3>
-          <div class="stacked-bar" id="gross-to-net-bar" aria-label="Deductions from gross salary"></div>
+          <h3 class="bar-title" data-i18n="grossToNet">From gross salary to net salary</h3>
+          <div class="stacked-bar" id="gross-to-net-bar" aria-label="Deductions from gross salary" data-i18n-aria="grossToNetAria"></div>
         </div>
       </div>
     </section>
 
     <section class="panel">
       <div class="section-title">
-        <h2>After-Net: Indirect Taxes</h2>
-        <span>Where net salary goes when you spend</span>
+        <h2 data-i18n="afterNet">After-Net: Indirect Taxes</h2>
+        <span data-i18n="whereNetGoes">Where net salary goes when you spend</span>
       </div>
       <div class="pie-container">
-        <svg id="after-tax-pie" viewBox="0 0 200 200" role="img" aria-label="Indirect tax breakdown of net salary"></svg>
+        <svg id="after-tax-pie" viewBox="0 0 200 200" role="img" aria-label="Indirect tax breakdown of net salary" data-i18n-aria="pieAria"></svg>
         <div class="legend" id="pie-legend"></div>
       </div>
     </section>
 
     <section class="panel" id="summary">
       <div class="section-title">
-        <h2>Summary</h2>
-        <span>Key figures and effective rates</span>
+        <h2 data-i18n="summary">Summary</h2>
+        <span data-i18n="keyFigures">Key figures and effective rates</span>
       </div>
       <div class="summary-grid">
         <div class="summary-item">
-          <h3>Company total cost</h3>
+          <h3 data-i18n="companyCost">Company total cost</h3>
           <div class="summary-value" data-summary="companyCost"></div>
           <div class="summary-sub" data-summary="companyCostShare"></div>
         </div>
         <div class="summary-item">
-          <h3>Gross salary</h3>
+          <h3 data-i18n="grossSalary">Gross salary</h3>
           <div class="summary-value" data-summary="grossSalary"></div>
           <div class="summary-sub" data-summary="grossShare"></div>
         </div>
         <div class="summary-item">
-          <h3>Employer SS</h3>
+          <h3 data-i18n="employerSS">Employer SS</h3>
           <div class="summary-value" data-summary="employerSS"></div>
           <div class="summary-sub" data-summary="employerRate"></div>
         </div>
         <div class="summary-item">
-          <h3>Employee SS</h3>
+          <h3 data-i18n="employeeSS">Employee SS</h3>
           <div class="summary-value" data-summary="employeeSS"></div>
           <div class="summary-sub" data-summary="employeeRate"></div>
         </div>
         <div class="summary-item">
-          <h3>Income Tax paid</h3>
+          <h3 data-i18n="incomeTaxPaid">Income Tax paid</h3>
           <div class="summary-value" data-summary="incomeTax"></div>
           <div class="summary-sub" data-summary="incomeTaxEffective"></div>
         </div>
         <div class="summary-item">
-          <h3>Net salary</h3>
+          <h3 data-i18n="netSalary">Net salary</h3>
           <div class="summary-value" data-summary="net"></div>
           <div class="summary-sub" data-summary="netShare"></div>
         </div>
         <div class="summary-item">
-          <h3>Indirect taxes</h3>
+          <h3 data-i18n="indirectTaxes">Indirect taxes</h3>
           <div class="summary-value" data-summary="indirectTotal"></div>
           <div class="summary-sub" data-summary="indirectShare"></div>
         </div>
         <div class="summary-item">
-          <h3>Disposable income</h3>
+          <h3 data-i18n="disposableIncome">Disposable income</h3>
           <div class="summary-value" data-summary="disposable"></div>
           <div class="summary-sub" data-summary="disposableShare"></div>
         </div>
         <div class="summary-item">
-          <h3>Effective tax rate</h3>
+          <h3 data-i18n="effectiveTaxRate">Effective tax rate</h3>
           <div class="summary-value" data-summary="effectiveGross"></div>
           <div class="summary-sub" data-summary="effectiveCTC"></div>
         </div>
@@ -791,37 +811,128 @@
     </section>
 
     <footer class="site-footer">
-      <div class="footer-person"><span class="footer-mark">ULPGC</span><div><strong>Prof. Dr. José Miguel Santana Núñez</strong><span>Department of Computer Engineering · University of Las Palmas de Gran Canaria</span></div></div>
-      <small>Default-value sources: Glassdoor (average salary in Spain, 2025); PwC Tax Summaries (Social Security and VAT); Playroll (IRPF 2025); Eurostat (indirect taxes).</small>
+      <div class="footer-person"><span class="footer-mark">ULPGC</span><div><strong data-i18n="professor">Prof. Dr. José Miguel Santana Núñez</strong><span data-i18n="department">Department of Computer Engineering · University of Las Palmas de Gran Canaria</span></div></div>
+      <small data-i18n="sources">Default-value sources: Glassdoor (average salary in Spain, 2025); PwC Tax Summaries (Social Security and VAT); Playroll (IRPF 2025); Eurostat (indirect taxes).</small>
     </footer>
   </main>
   <script>
-    const currencyFormatEn = new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "EUR",
-      maximumFractionDigits: 0
-    });
+    const translations = {
+      en: {
+        appName: "Tax Visualizer", backToTools: "Back to Edu Tools", ulpgcLogo: "ULPGC logo", mainNavigation: "Main navigation",
+        inputs: "Inputs", taxBracketsNav: "Tax brackets", summary: "Summary", customizeScenario: "Customize your scenario",
+        grossSalaryInput: "Gross salary (€)", employerSSInput: "Employer Social Security (% of gross)",
+        employeeSSInput: "Employee Social Security (% of gross)", allowanceInput: "Personal allowance (€/year)",
+        vatInput: "VAT as % of net", indirectInput: "Other indirect taxes as % of net",
+        bracketsHeading: "Income Tax Brackets (IRPF in Spain)", adjustThresholds: "Adjust thresholds and rates below",
+        country: "Country", custom: "Custom", spain: "Spain", usa: "USA", germany: "Germany", france: "France",
+        addBracket: "Add bracket", resetDefaults: "Reset defaults", minimum: "Min (€)", maximum: "Max (€)",
+        rate: "Rate (%)", actions: "Actions", delete: "Delete",
+        deleteTooltip: "Delete bracket: remove this range from the table.",
+        chartCaption: "Each bar shows the marginal rate for that bracket. Highlighted areas show the portion of your taxable income that falls within each bracket.",
+        salaryJourney: "Salary Journey", trackMoney: "Track money from employer to disposable income",
+        companyToGross: "From company cost to employee gross", grossToNet: "From gross salary to net salary",
+        afterNet: "After-Net: Indirect Taxes", whereNetGoes: "Where net salary goes when you spend",
+        keyFigures: "Key figures and effective rates", companyCost: "Company total cost", grossSalary: "Gross salary",
+        employerSS: "Employer SS", employeeSS: "Employee SS", incomeTaxPaid: "Income Tax paid",
+        incomeTax: "Income Tax", netSalary: "Net salary", indirectTaxes: "Indirect taxes", otherIndirectTaxes: "Other indirect taxes",
+        disposableIncome: "Disposable income", effectiveTaxRate: "Effective tax rate",
+        professor: "Prof. Dr. José Miguel Santana Núñez",
+        department: "Department of Computer Engineering · University of Las Palmas de Gran Canaria",
+        sources: "Default-value sources: Glassdoor (average salary in Spain, 2025); PwC Tax Summaries (Social Security and VAT); Playroll (IRPF 2025); Eurostat (indirect taxes).",
+        incomeTaxChartAria: "Income tax brackets visualization", companyBarAria: "Composition of company total cost",
+        grossToNetAria: "Deductions from gross salary", pieAria: "Indirect tax breakdown of net salary",
+        switchLanguage: "Switch to Spanish", andAbove: " and above", taxedAt: " taxed at ", irpfEquivalent: " (Income Tax, IRPF equivalent).",
+        companyCostTooltip: "Company total cost (CTC): total expense for the employer including social security.",
+        grossTooltip: "Gross salary: amount before employee contributions and taxes.",
+        employeeTooltip: "Employee SS: contribution for healthcare and pension.",
+        incomeTaxTooltip: "Income Tax (IRPF in Spain): personal income tax withheld by the employer.",
+        netTooltip: "Net salary: the amount you receive after withholdings.",
+        vat: "VAT", vatTooltip: "VAT: value-added tax paid on most purchases.",
+        indirectTooltip: "Other indirect taxes: fuel, tobacco, or electricity taxes.",
+        disposableTooltip: "Disposable income: net salary after your indirect tax burden.",
+        noNetTooltip: "No net salary: there is nothing to split into taxes or spending.",
+        postTax: "Post-tax", ofNet: "of net", ofGross: "of gross", ofCTC: "of CTC", employerSSOfCTC: "employer SS of CTC"
+      },
+      es: {
+        appName: "Visualizador de impuestos", backToTools: "Volver a Edu Tools", ulpgcLogo: "Logotipo de la ULPGC", mainNavigation: "Navegación principal",
+        inputs: "Datos", taxBracketsNav: "Tramos fiscales", summary: "Resumen", customizeScenario: "Personaliza tu caso",
+        grossSalaryInput: "Salario bruto (€)", employerSSInput: "Seguridad Social de la empresa (% del bruto)",
+        employeeSSInput: "Seguridad Social del trabajador (% del bruto)", allowanceInput: "Mínimo personal (€/año)",
+        vatInput: "IVA como % del neto", indirectInput: "Otros impuestos indirectos como % del neto",
+        bracketsHeading: "Tramos del impuesto sobre la renta (IRPF en España)", adjustThresholds: "Ajusta los límites y tipos de cada tramo",
+        country: "País", custom: "Personalizado", spain: "España", usa: "EE. UU.", germany: "Alemania", france: "Francia",
+        addBracket: "Añadir tramo", resetDefaults: "Restablecer valores", minimum: "Mín (€)", maximum: "Máx (€)",
+        rate: "Tipo (%)", actions: "Acciones", delete: "Eliminar",
+        deleteTooltip: "Eliminar tramo: quita este intervalo de la tabla.",
+        chartCaption: "Cada barra muestra el tipo marginal de ese tramo. Las zonas resaltadas indican qué parte de la base imponible cae en cada tramo.",
+        salaryJourney: "Recorrido del salario", trackMoney: "Sigue el dinero desde la empresa hasta la renta disponible",
+        companyToGross: "Del coste de empresa al salario bruto", grossToNet: "Del salario bruto al salario neto",
+        afterNet: "Después del neto: impuestos indirectos", whereNetGoes: "En qué se emplea el salario neto al gastar",
+        keyFigures: "Cifras principales y tipos efectivos", companyCost: "Coste total de empresa", grossSalary: "Salario bruto",
+        employerSS: "Seguridad Social de la empresa", employeeSS: "Seguridad Social del trabajador", incomeTaxPaid: "IRPF pagado",
+        incomeTax: "IRPF", netSalary: "Salario neto", indirectTaxes: "Impuestos indirectos", otherIndirectTaxes: "Otros impuestos indirectos",
+        disposableIncome: "Renta disponible", effectiveTaxRate: "Tipo efectivo total",
+        professor: "Prof. Dr. José Miguel Santana Núñez",
+        department: "Departamento de Ingeniería Informática · Universidad de Las Palmas de Gran Canaria",
+        sources: "Fuentes de los valores predeterminados: Glassdoor (salario medio en España, 2025); PwC Tax Summaries (Seguridad Social e IVA); Playroll (IRPF 2025); Eurostat (impuestos indirectos).",
+        incomeTaxChartAria: "Visualización de los tramos del impuesto sobre la renta", companyBarAria: "Composición del coste total de empresa",
+        grossToNetAria: "Deducciones del salario bruto", pieAria: "Desglose de impuestos indirectos del salario neto",
+        switchLanguage: "Cambiar a inglés", andAbove: " en adelante", taxedAt: " gravados al ", irpfEquivalent: " (impuesto sobre la renta, IRPF).",
+        companyCostTooltip: "Coste total de empresa: gasto total del empleador, incluida la Seguridad Social.",
+        grossTooltip: "Salario bruto: importe antes de las cotizaciones del trabajador y los impuestos.",
+        employeeTooltip: "Seguridad Social del trabajador: cotización para sanidad y pensiones.",
+        incomeTaxTooltip: "IRPF: impuesto sobre la renta de las personas físicas retenido por la empresa.",
+        netTooltip: "Salario neto: importe que recibes después de las retenciones.",
+        vat: "IVA", vatTooltip: "IVA: impuesto sobre el valor añadido que se paga en la mayoría de las compras.",
+        indirectTooltip: "Otros impuestos indirectos: gravámenes sobre combustible, tabaco o electricidad.",
+        disposableTooltip: "Renta disponible: salario neto tras descontar los impuestos indirectos.",
+        noNetTooltip: "Sin salario neto: no hay importe que repartir entre impuestos y gasto.",
+        postTax: "Tras impuestos", ofNet: "del neto", ofGross: "del bruto", ofCTC: "del coste de empresa", employerSSOfCTC: "de Seguridad Social de la empresa sobre su coste total"
+      }
+    };
 
-    const numberFormat = currencyFormatEn;
+    let language = "en";
+    const currencyFormats = {
+      en: new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }),
+      es: new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })
+    };
+    let numberFormat;
+    let percentFormat;
+    let decimalFormat;
+    const tr = (key) => translations[language][key];
 
-    const percentFormat = new Intl.NumberFormat("en-GB", {
-      style: "percent",
-      maximumFractionDigits: 1
-    });
-    const decimalFormat = new Intl.NumberFormat("en-GB", {
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1
-    });
+    function setLanguage(nextLanguage) {
+      language = nextLanguage;
+      const locale = language === "es" ? "es-ES" : "en-GB";
+      numberFormat = currencyFormats[language];
+      percentFormat = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 });
+      decimalFormat = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+      document.documentElement.lang = language;
+      document.title = tr("appName") + " | ULPGC";
+      document.querySelector('meta[name="description"]').content = language === "es"
+        ? "Herramienta educativa para explorar el salario, la Seguridad Social y los impuestos directos e indirectos."
+        : "An educational tool for exploring salary, social security contributions, income tax, and indirect taxes.";
+      document.querySelectorAll("[data-i18n]").forEach((element) => { element.textContent = tr(element.dataset.i18n); });
+      document.querySelectorAll("[data-i18n-aria]").forEach((element) => { element.setAttribute("aria-label", tr(element.dataset.i18nAria)); });
+      document.querySelectorAll("[data-i18n-alt]").forEach((element) => { element.alt = tr(element.dataset.i18nAlt); });
+      const toggle = document.getElementById("language-toggle");
+      toggle.textContent = language === "es" ? "EN" : "ES";
+      toggle.setAttribute("aria-label", tr("switchLanguage"));
+      toggle.setAttribute("title", tr("switchLanguage"));
+      hideTooltip();
+      renderTaxBracketTable();
+      compute();
+    }
 
     const tooltipEl = document.getElementById("tooltip");
     let activeTooltipSource = null;
 
     function showTooltip(target) {
-      const en = target.getAttribute("data-tooltip-en");
-      if (!en) {
+      const message = target.getAttribute("data-tooltip-" + language);
+      if (!message) {
         return;
       }
-      tooltipEl.innerHTML = "<strong>" + en + "</strong>";
+      tooltipEl.textContent = message;
       tooltipEl.classList.add("visible");
       tooltipEl.setAttribute("aria-hidden", "false");
       activeTooltipSource = target;
@@ -970,12 +1081,13 @@
       return sorted;
     }
 
-    function formatRangeEn(bracket) {
-      const minLabel = currencyFormatEn.format(bracket.min);
+    function formatRange(bracket, localeLanguage) {
+      const formatter = currencyFormats[localeLanguage];
+      const minLabel = formatter.format(bracket.min);
       if (!Number.isFinite(bracket.max)) {
-        return minLabel + " and above";
+        return minLabel + translations[localeLanguage].andAbove;
       }
-      return `${minLabel} – ${currencyFormatEn.format(bracket.max)}`;
+      return `${minLabel} – ${formatter.format(bracket.max)}`;
     }
 
     function switchToCustomIfNeeded() {
@@ -1043,9 +1155,10 @@
         const deleteButton = document.createElement("button");
         deleteButton.type = "button";
         deleteButton.className = "delete-row tooltip-source";
-        deleteButton.textContent = "Delete";
+        deleteButton.textContent = tr("delete");
         deleteButton.tabIndex = 0;
-        deleteButton.setAttribute("data-tooltip-en", "Delete bracket: remove this range from the table.");
+        deleteButton.setAttribute("data-tooltip-en", translations.en.deleteTooltip);
+        deleteButton.setAttribute("data-tooltip-es", translations.es.deleteTooltip);
         deleteButton.addEventListener("click", () => deleteBracket(index));
         actionCell.appendChild(deleteButton);
 
@@ -1217,8 +1330,11 @@
         const barHeight = (item.rate / maxRate) * 46;
         const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
         group.setAttribute("tabindex", "0");
-        const tooltipEn = formatRangeEn(item) + " taxed at " + Math.round(item.rate * 100) + "% (Income Tax, IRPF equivalent).";
-        group.setAttribute("data-tooltip-en", tooltipEn);
+        for (const localeLanguage of ["en", "es"]) {
+          const copy = translations[localeLanguage];
+          const tooltipText = formatRange(item, localeLanguage) + copy.taxedAt + Math.round(item.rate * 100) + "%" + copy.irpfEquivalent;
+          group.setAttribute("data-tooltip-" + localeLanguage, tooltipText);
+        }
 
         const bar = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         bar.setAttribute("x", cursor.toFixed(2));
@@ -1261,16 +1377,16 @@
       bar.innerHTML = "";
       const segments = [
         {
-          label: "Employer SS",
+          label: tr("employerSS"),
           value: employerSS,
           color: "linear-gradient(135deg, #ec895b 0%, #dc704e 95%)",
-          tooltipEn: "Company total cost (CTC): total expense for the employer including social security."
+          tooltipKey: "companyCostTooltip"
         },
         {
-          label: "Gross salary",
+          label: tr("grossSalary"),
           value: grossSalary,
           color: "linear-gradient(135deg, #258cca 0%, #1476b2 95%)",
-          tooltipEn: "Gross salary: amount before employee contributions and taxes."
+          tooltipKey: "grossTooltip"
         }
       ];
 
@@ -1284,7 +1400,8 @@
         element.style.flexGrow = String(segment.value || 0.0001);
         element.style.flexBasis = "0";
         element.style.background = segment.color;
-        element.setAttribute("data-tooltip-en", segment.tooltipEn);
+        element.setAttribute("data-tooltip-en", translations.en[segment.tooltipKey]);
+        element.setAttribute("data-tooltip-es", translations.es[segment.tooltipKey]);
         element.innerHTML = `
           <strong>${segment.label}</strong>
           <span>${numberFormat.format(segment.value)} &middot; ${decimalFormat.format(percent)}%</span>
@@ -1298,22 +1415,22 @@
       bar.innerHTML = "";
       const segments = [
         {
-          label: "Employee SS",
+          label: tr("employeeSS"),
           value: employeeSS,
           color: "linear-gradient(135deg, #788dc6 0%, #6079b8 95%)",
-          tooltipEn: "Employee SS: contribution for healthcare and pension."
+          tooltipKey: "employeeTooltip"
         },
         {
-          label: "Income Tax",
+          label: tr("incomeTax"),
           value: incomeTax,
           color: "linear-gradient(135deg, #f3a16b 0%, #e8895a 95%)",
-          tooltipEn: "Income Tax (IRPF in Spain): personal income tax withheld by the employer."
+          tooltipKey: "incomeTaxTooltip"
         },
         {
-          label: "Net salary",
+          label: tr("netSalary"),
           value: net,
           color: "linear-gradient(135deg, #2cb6a6 0%, #168e86 95%)",
-          tooltipEn: "Net salary: the amount you receive after withholdings."
+          tooltipKey: "netTooltip"
         }
       ];
 
@@ -1327,7 +1444,8 @@
         element.style.flexGrow = String(segment.value || 0.0001);
         element.style.flexBasis = "0";
         element.style.background = segment.color;
-        element.setAttribute("data-tooltip-en", segment.tooltipEn);
+        element.setAttribute("data-tooltip-en", translations.en[segment.tooltipKey]);
+        element.setAttribute("data-tooltip-es", translations.es[segment.tooltipKey]);
         element.innerHTML = `
           <strong>${segment.label}</strong>
           <span>${numberFormat.format(segment.value)} &middot; ${decimalFormat.format(percent)}%</span>
@@ -1365,22 +1483,22 @@
       const total = vatAmount + otherAmount + disposable;
       const slices = [
         {
-          label: "VAT",
+          label: tr("vat"),
           value: vatAmount,
           color: "#eeb176",
-          tooltipEn: "VAT: value-added tax paid on most purchases."
+          tooltipKey: "vatTooltip"
         },
         {
-          label: "Other indirect taxes",
+          label: tr("otherIndirectTaxes"),
           value: otherAmount,
           color: "#878fc6",
-          tooltipEn: "Other indirect taxes: fuel, tobacco, or electricity taxes."
+          tooltipKey: "indirectTooltip"
         },
         {
-          label: "Disposable income",
+          label: tr("disposableIncome"),
           value: disposable,
           color: "#27ae9e",
-          tooltipEn: "Disposable income: net salary after your indirect tax burden."
+          tooltipKey: "disposableTooltip"
         }
       ];
 
@@ -1390,7 +1508,8 @@
         circle.setAttribute("cy", "100");
         circle.setAttribute("r", "82");
         circle.setAttribute("fill", "rgba(148, 163, 184, 0.15)");
-        circle.setAttribute("data-tooltip-en", "No net salary: there is nothing to split into taxes or spending.");
+        circle.setAttribute("data-tooltip-en", translations.en.noNetTooltip);
+        circle.setAttribute("data-tooltip-es", translations.es.noNetTooltip);
         circle.setAttribute("tabindex", "0");
         svg.appendChild(circle);
       } else {
@@ -1403,7 +1522,8 @@
           const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
           path.setAttribute("d", describeArc(100, 100, 82, startAngle, startAngle + angle));
           path.setAttribute("fill", slice.color);
-          path.setAttribute("data-tooltip-en", slice.tooltipEn);
+          path.setAttribute("data-tooltip-en", translations.en[slice.tooltipKey]);
+          path.setAttribute("data-tooltip-es", translations.es[slice.tooltipKey]);
           path.setAttribute("tabindex", "0");
           svg.appendChild(path);
           startAngle += angle;
@@ -1423,7 +1543,7 @@
       title.setAttribute("fill", "#688199");
       title.setAttribute("font-size", "10");
       title.setAttribute("text-anchor", "middle");
-      title.textContent = "Post-tax";
+      title.textContent = tr("postTax");
       svg.appendChild(title);
 
       const amount = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -1432,7 +1552,7 @@
       amount.setAttribute("fill", "#158d83");
       amount.setAttribute("font-size", "12");
       amount.setAttribute("text-anchor", "middle");
-      amount.textContent = total > 0 ? numberFormat.format(disposable) : "\u20ac0";
+      amount.textContent = numberFormat.format(disposable);
       svg.appendChild(amount);
 
       renderPieLegend(slices, total);
@@ -1445,13 +1565,14 @@
         const item = document.createElement("div");
         item.className = "legend-item tooltip-source";
         item.tabIndex = 0;
-        item.setAttribute("data-tooltip-en", slice.tooltipEn);
+        item.setAttribute("data-tooltip-en", translations.en[slice.tooltipKey]);
+        item.setAttribute("data-tooltip-es", translations.es[slice.tooltipKey]);
         const percent = decimalFormat.format(total > 0 ? (slice.value / total) * 100 : 0);
         item.innerHTML = `
           <div class="legend-swatch" style="background:${slice.color};"></div>
           <div>
             <strong style="display:block;color:var(--fg);font-weight:600;">${slice.label}</strong>
-            <span style="color:var(--fg-muted);font-size:0.85rem;">${numberFormat.format(slice.value)} &middot; ${percent}% of net</span>
+            <span style="color:var(--fg-muted);font-size:0.85rem;">${numberFormat.format(slice.value)} &middot; ${percent}% ${tr("ofNet")}</span>
           </div>
         `;
         legend.appendChild(item);
@@ -1460,23 +1581,23 @@
 
     function updateSummary(values) {
       document.querySelector('[data-summary="companyCost"]').textContent = numberFormat.format(values.companyCost);
-      document.querySelector('[data-summary="companyCostShare"]').textContent = values.companyCost > 0 ? percentFormat.format(values.employerSS / values.companyCost) + " employer SS of CTC" : "\u2014";
+      document.querySelector('[data-summary="companyCostShare"]').textContent = values.companyCost > 0 ? percentFormat.format(values.employerSS / values.companyCost) + " " + tr("employerSSOfCTC") : "\u2014";
       document.querySelector('[data-summary="grossSalary"]').textContent = numberFormat.format(values.grossSalary);
-      document.querySelector('[data-summary="grossShare"]').textContent = values.companyCost > 0 ? percentFormat.format(values.grossSalary / values.companyCost) + " of CTC" : "\u2014";
+      document.querySelector('[data-summary="grossShare"]').textContent = values.companyCost > 0 ? percentFormat.format(values.grossSalary / values.companyCost) + " " + tr("ofCTC") : "\u2014";
       document.querySelector('[data-summary="employerSS"]').textContent = numberFormat.format(values.employerSS);
       document.querySelector('[data-summary="employerRate"]').textContent = percentFormat.format(values.employerRate / 100);
       document.querySelector('[data-summary="employeeSS"]').textContent = numberFormat.format(values.employeeSS);
       document.querySelector('[data-summary="employeeRate"]').textContent = percentFormat.format(values.employeeRate / 100);
       document.querySelector('[data-summary="incomeTax"]').textContent = numberFormat.format(values.incomeTax);
-      document.querySelector('[data-summary="incomeTaxEffective"]').textContent = values.grossSalary > 0 ? percentFormat.format(values.incomeTax / values.grossSalary) + " of gross" : "\u2014";
+      document.querySelector('[data-summary="incomeTaxEffective"]').textContent = values.grossSalary > 0 ? percentFormat.format(values.incomeTax / values.grossSalary) + " " + tr("ofGross") : "\u2014";
       document.querySelector('[data-summary="net"]').textContent = numberFormat.format(values.netSalary);
-      document.querySelector('[data-summary="netShare"]').textContent = values.companyCost > 0 ? percentFormat.format(values.netSalary / values.companyCost) + " of CTC" : "\u2014";
+      document.querySelector('[data-summary="netShare"]').textContent = values.companyCost > 0 ? percentFormat.format(values.netSalary / values.companyCost) + " " + tr("ofCTC") : "\u2014";
       document.querySelector('[data-summary="indirectTotal"]').textContent = numberFormat.format(values.indirectTaxes);
-      document.querySelector('[data-summary="indirectShare"]').textContent = values.netSalary > 0 ? percentFormat.format(values.indirectTaxes / values.netSalary) + " of net" : "\u2014";
+      document.querySelector('[data-summary="indirectShare"]').textContent = values.netSalary > 0 ? percentFormat.format(values.indirectTaxes / values.netSalary) + " " + tr("ofNet") : "\u2014";
       document.querySelector('[data-summary="disposable"]').textContent = numberFormat.format(values.disposableIncome);
-      document.querySelector('[data-summary="disposableShare"]').textContent = values.netSalary > 0 ? percentFormat.format(values.disposableIncome / values.netSalary) + " of net" : "\u2014";
-      document.querySelector('[data-summary="effectiveGross"]').textContent = values.grossSalary > 0 ? percentFormat.format(values.totalTaxes / values.grossSalary) + " of gross" : "\u2014";
-      document.querySelector('[data-summary="effectiveCTC"]').textContent = values.companyCost > 0 ? percentFormat.format(values.totalTaxes / values.companyCost) + " of CTC" : "\u2014";
+      document.querySelector('[data-summary="disposableShare"]').textContent = values.netSalary > 0 ? percentFormat.format(values.disposableIncome / values.netSalary) + " " + tr("ofNet") : "\u2014";
+      document.querySelector('[data-summary="effectiveGross"]').textContent = values.grossSalary > 0 ? percentFormat.format(values.totalTaxes / values.grossSalary) + " " + tr("ofGross") : "\u2014";
+      document.querySelector('[data-summary="effectiveCTC"]').textContent = values.companyCost > 0 ? percentFormat.format(values.totalTaxes / values.companyCost) + " " + tr("ofCTC") : "\u2014";
     }
 
     function safeNumber(input) {
@@ -1530,9 +1651,12 @@
       input.addEventListener("input", compute);
     });
 
+    document.getElementById("language-toggle").addEventListener("click", () => {
+      setLanguage(language === "en" ? "es" : "en");
+    });
+
     loadBracketsForSelection();
-    renderTaxBracketTable();
-    compute();
+    setLanguage("en");
   </script>
 </body>
 </html>
