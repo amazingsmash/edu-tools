@@ -521,6 +521,29 @@
     .delete-row { color: #bd5a50; background: #fff1ef; border-color: #f8d7d2; border-radius: 8px; }
     .bracket-table tbody tr:not(:last-child) td { border-color: #e6edf4; }
     .chart-caption { background: #f5f9fd; padding: 12px 15px; border-left: 3px solid #78b8e2; border-radius: 4px 9px 9px 4px; font-size: .8rem; }
+    .tax-formula { padding: clamp(18px, 3vw, 28px); border: 1px solid #d6e6f3; border-radius: 17px; background: linear-gradient(135deg, #f3f9fe, #fbfdff 60%); }
+    .formula-header { display: flex; align-items: start; justify-content: space-between; flex-wrap: wrap; gap: 14px 24px; margin-bottom: 22px; }
+    .formula-kicker { display: block; color: #1684b5; font-size: .69rem; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+    .formula-header h3 { margin: 3px 0 0; color: #173354; font-size: clamp(1.15rem, 2vw, 1.45rem); letter-spacing: -.025em; }
+    .formula-base { display: flex; align-items: center; gap: 11px; padding: 9px 13px; background: #e2f1f9; border-radius: 10px; color: #34617f; font-size: .8rem; font-weight: 700; }
+    .formula-base strong { color: #075b89; font-size: 1.12rem; white-space: nowrap; }
+    .formula-derivation { margin: -10px 0 20px; color: #637d92; font-size: .78rem; }
+    .formula-equation { display: flex; align-items: stretch; flex-wrap: wrap; gap: 12px 7px; }
+    .formula-part { display: flex; align-items: stretch; gap: 7px; min-width: 0; }
+    .formula-operator { align-self: center; color: #5f8faf; font-size: 1.55rem; font-weight: 600; line-height: 1; }
+    .formula-term { display: flex; flex-direction: column; gap: 5px; min-width: 155px; padding: 13px 15px; border: 1px solid #d7e7f2; border-radius: 12px; background: #fff; box-shadow: 0 4px 13px rgba(19, 78, 123, .045); transition: border-color .16s ease, transform .16s ease, box-shadow .16s ease; }
+    .formula-term:hover, .formula-term:focus-visible { outline: none; transform: translateY(-2px); border-color: #59add2; box-shadow: 0 9px 21px rgba(17, 112, 161, .13); }
+    .formula-term.is-empty { background: #f8fafc; color: #7b8fa0; }
+    .formula-term-top { display: flex; justify-content: space-between; gap: 8px; color: #66849c; font-size: .68rem; font-weight: 750; text-transform: uppercase; letter-spacing: .035em; }
+    .formula-range { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 105px; }
+    .formula-math { display: flex; gap: 7px; align-items: baseline; color: #194a70; white-space: nowrap; font-size: .9rem; }
+    .formula-math strong { font-weight: 850; }
+    .formula-math span { color: #7895a9; }
+    .formula-contribution { color: #44846f; font-size: .77rem; font-weight: 750; }
+    .formula-total { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 145px; padding: 11px 18px; border-radius: 12px; background: #155480; color: #dbf4ff; box-shadow: 0 9px 20px rgba(21, 84, 128, .16); }
+    .formula-total span { font-size: .67rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .formula-total strong { color: #fff; font-size: 1.35rem; line-height: 1.2; white-space: nowrap; }
+    #income-tax-chart g.is-highlighted rect:first-child { stroke: #104b83; stroke-width: 1.4; }
     .bar-title { color: #536e87; margin: 0 0 10px; font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
     .stacked-container { gap: 24px; }
     .stacked-bar { min-height: 70px; background: #f1f6fa; border: 0; border-radius: 11px; }
@@ -570,6 +593,8 @@
       .summary-item { padding: 12px; }
       .summary-item h3 { font-size: .6rem; }
       .summary-value { font-size: 1.1rem; }
+      .formula-part { width: 100%; }
+      .formula-term, .formula-total { flex: 1; }
     }
   </style>
 </head>
@@ -726,6 +751,17 @@
       <div class="chart-caption" data-i18n="chartCaption">
         Each bar shows the marginal rate for that bracket. Highlighted areas show the portion of your taxable income that falls within each bracket.
       </div>
+      <div class="tax-formula" aria-labelledby="tax-formula-title">
+        <div class="formula-header">
+          <div>
+            <span class="formula-kicker" data-i18n="formulaKicker">STEP BY STEP</span>
+            <h3 id="tax-formula-title" data-i18n="formulaTitle">How income tax adds up</h3>
+          </div>
+          <div class="formula-base"><span data-i18n="taxableBase">Taxable base</span><strong id="formula-taxable-base"></strong></div>
+        </div>
+        <p class="formula-derivation" id="formula-derivation"></p>
+        <div class="formula-equation" id="tax-formula-equation" role="group" aria-label="Income tax calculation by bracket" data-i18n-aria="formulaAria"></div>
+      </div>
     </section>
 
     <section class="panel">
@@ -829,6 +865,10 @@
         rate: "Rate (%)", actions: "Actions", delete: "Delete",
         deleteTooltip: "Delete bracket: remove this range from the table.",
         chartCaption: "Each bar shows the marginal rate for that bracket. Highlighted areas show the portion of your taxable income that falls within each bracket.",
+        formulaKicker: "Step by step", formulaTitle: "How income tax adds up", taxableBase: "Taxable base",
+        formulaAria: "Income tax calculation by bracket", personalAllowance: "Personal allowance",
+        allowanceCoversGross: "The personal allowance covers the entire gross salary.",
+        formulaBracket: "Bracket", formulaTotal: "Total Income Tax", formulaContribution: "Tax",
         salaryJourney: "Salary Journey", trackMoney: "Track money from employer to disposable income",
         companyToGross: "From company cost to employee gross", grossToNet: "From gross salary to net salary",
         afterNet: "After-Net: Indirect Taxes", whereNetGoes: "Where net salary goes when you spend",
@@ -865,6 +905,10 @@
         rate: "Tipo (%)", actions: "Acciones", delete: "Eliminar",
         deleteTooltip: "Eliminar tramo: quita este intervalo de la tabla.",
         chartCaption: "Cada barra muestra el tipo marginal de ese tramo. Las zonas resaltadas indican qué parte de la base imponible cae en cada tramo.",
+        formulaKicker: "Paso a paso", formulaTitle: "Cómo se calcula el IRPF", taxableBase: "Base imponible",
+        formulaAria: "Cálculo del IRPF por tramos", personalAllowance: "Mínimo personal",
+        allowanceCoversGross: "El mínimo personal cubre todo el salario bruto.",
+        formulaBracket: "Tramo", formulaTotal: "IRPF total", formulaContribution: "Impuesto",
         salaryJourney: "Recorrido del salario", trackMoney: "Sigue el dinero desde la empresa hasta la renta disponible",
         companyToGross: "Del coste de empresa al salario bruto", grossToNet: "Del salario bruto al salario neto",
         afterNet: "Después del neto: impuestos indirectos", whereNetGoes: "En qué se emplea el salario neto al gastar",
@@ -895,6 +939,18 @@
     const currencyFormats = {
       en: new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }),
       es: new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })
+    };
+    const formulaCurrencyFormats = {
+      en: new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 2 }),
+      es: new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 2 })
+    };
+    const formulaTaxFormats = {
+      en: new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      es: new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    };
+    const formulaPercentFormats = {
+      en: new Intl.NumberFormat("en-GB", { style: "percent", maximumFractionDigits: 2 }),
+      es: new Intl.NumberFormat("es-ES", { style: "percent", maximumFractionDigits: 2 })
     };
     let numberFormat;
     let percentFormat;
@@ -1372,6 +1428,93 @@
       });
     }
 
+    function renderIncomeTaxFormula(breakdown, taxableBase, grossSalary, personalAllowance, incomeTaxTotal) {
+      const equation = document.getElementById("tax-formula-equation");
+      const currency = formulaCurrencyFormats[language];
+      const taxCurrency = formulaTaxFormats[language];
+      const percent = formulaPercentFormats[language];
+      document.getElementById("formula-taxable-base").textContent = currency.format(taxableBase);
+      document.getElementById("formula-derivation").textContent = grossSalary <= personalAllowance
+        ? `${tr("allowanceCoversGross")} ${tr("taxableBase")}: ${currency.format(0)}`
+        : `${tr("grossSalary")} ${currency.format(grossSalary)} − ${tr("personalAllowance")} ${currency.format(personalAllowance)} = ${tr("taxableBase")} ${currency.format(taxableBase)}`;
+      equation.replaceChildren();
+      const chartGroups = document.querySelectorAll("#income-tax-chart g");
+
+      breakdown.forEach((item, index) => {
+        const part = document.createElement("div");
+        part.className = "formula-part";
+        if (index > 0) {
+          const plus = document.createElement("span");
+          plus.className = "formula-operator";
+          plus.setAttribute("aria-hidden", "true");
+          plus.textContent = "+";
+          part.appendChild(plus);
+        }
+
+        const term = document.createElement("div");
+        term.className = "formula-term tooltip-source" + (item.taxableAmount <= 0 ? " is-empty" : "");
+        term.tabIndex = 0;
+        const top = document.createElement("div");
+        top.className = "formula-term-top";
+        const bracketLabel = document.createElement("span");
+        bracketLabel.textContent = `${tr("formulaBracket")} ${index + 1}`;
+        const range = document.createElement("span");
+        range.className = "formula-range";
+        range.textContent = formatRange(item, language);
+        range.title = range.textContent;
+        top.append(bracketLabel, range);
+
+        const math = document.createElement("div");
+        math.className = "formula-math";
+        const amount = document.createElement("strong");
+        amount.textContent = currency.format(item.taxableAmount);
+        const multiply = document.createElement("span");
+        multiply.textContent = "×";
+        const rate = document.createElement("strong");
+        rate.textContent = percent.format(item.rate);
+        math.append(amount, multiply, rate);
+
+        const contribution = document.createElement("div");
+        contribution.className = "formula-contribution";
+        contribution.textContent = `${tr("formulaContribution")}: ${taxCurrency.format(item.taxAmount)}`;
+        term.append(top, math, contribution);
+        for (const localeLanguage of ["en", "es"]) {
+          const copy = translations[localeLanguage];
+          const localCurrency = formulaCurrencyFormats[localeLanguage];
+          const localTaxCurrency = formulaTaxFormats[localeLanguage];
+          const localPercent = formulaPercentFormats[localeLanguage];
+          term.setAttribute("data-tooltip-" + localeLanguage,
+            `${copy.formulaBracket} ${index + 1} (${formatRange(item, localeLanguage)}): ${localCurrency.format(item.taxableAmount)} × ${localPercent.format(item.rate)} = ${localTaxCurrency.format(item.taxAmount)}.`);
+        }
+        term.setAttribute("aria-label", term.getAttribute("data-tooltip-" + language));
+        const highlight = () => chartGroups[index]?.classList.add("is-highlighted");
+        const unhighlight = () => chartGroups[index]?.classList.remove("is-highlighted");
+        term.addEventListener("pointerenter", highlight);
+        term.addEventListener("pointerleave", unhighlight);
+        term.addEventListener("focus", highlight);
+        term.addEventListener("blur", unhighlight);
+        part.appendChild(term);
+        equation.appendChild(part);
+      });
+
+      const resultPart = document.createElement("div");
+      resultPart.className = "formula-part";
+      const equals = document.createElement("span");
+      equals.className = "formula-operator";
+      equals.setAttribute("aria-hidden", "true");
+      equals.textContent = "=";
+      const result = document.createElement("div");
+      result.className = "formula-total";
+      const resultLabel = document.createElement("span");
+      resultLabel.textContent = tr("formulaTotal");
+      const resultAmount = document.createElement("strong");
+      resultAmount.setAttribute("aria-live", "polite");
+      resultAmount.textContent = taxCurrency.format(incomeTaxTotal);
+      result.append(resultLabel, resultAmount);
+      resultPart.append(equals, result);
+      equation.appendChild(resultPart);
+    }
+
     function renderCompanyBar(companyCost, employerSS, grossSalary) {
       const bar = document.getElementById("company-cost-bar");
       bar.innerHTML = "";
@@ -1629,6 +1772,7 @@
       const totalTaxes = employerSS + employeeSS + incomeTaxTotal + indirectTaxes;
 
       renderIncomeTaxChart(breakdown, taxableBase, sorted);
+      renderIncomeTaxFormula(breakdown, taxableBase, grossSalary, personalAllowance, incomeTaxTotal);
       renderCompanyBar(companyCost, employerSS, grossSalary);
       renderGrossToNetBar(grossSalary, employeeSS, incomeTaxTotal, netSalary);
       renderPieChart(vatAmount, otherIndirect, disposableIncome);
