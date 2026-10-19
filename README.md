@@ -16,11 +16,14 @@ El repositorio incluye actualmente:
 
 - `index.html`: portal principal de acceso a las herramientas.
 - `spain-tax-visualizer.html`: visualizador interactivo de impuestos en Espana.
+- `sus-calculator.html`: calculadora grupal del System Usability Scale con tabla de respuestas, puntuaciones individuales, media y curva interactiva de percentil y grade.
 - `probability_distribution_function.html`: simulacion interactiva de distribuciones de probabilidad y ley de los grandes numeros.
 - `hpi-theory-hub.html`: hub de teoria, videos, vocabulario y recursos organizados por secciones.
 - `charts_showcase.html`: galeria o muestra de visualizaciones y graficos.
 - `ui_elements_catalog.html`: catalogo de elementos de interfaz reutilizables.
 - `temp_script.js`: script auxiliar utilizado durante el desarrollo.
+
+La curva de percentiles de `sus-calculator.html` usa puntos del [material complementario de Sauro y Lewis](https://measuringu.com/wp-content/uploads/2017/05/PracticalStatsCompanion_2ndED.pdf) y los [umbrales de grades de MeasuringU](https://measuringu.com/sus-items/). La app interpola los percentiles entre puntos; el Excel de referencia contiene la gr&aacute;fica como imagen.
 
 ## Uso
 

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Calculate System Usability Scale scores for a group with an interactive response table.">
+  <title>SUS Group Calculator | ULPGC</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --ink: #14243e;
+      --muted: #64748b;
+      --blue: #1475bb;
+      --blue-dark: #005e9f;
+      --teal: #0f9189;
+      --line: #dfe7f1;
+      --soft: #f5f9fd;
+      --shadow: 0 12px 38px rgba(24, 49, 83, .055);
+      font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      padding: 0 24px 56px;
+      background: radial-gradient(circle at 10% 0%, #e8f2fd 0, transparent 32%), var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    main { width: min(1200px, 100%); margin: 0 auto; }
+    a { color: var(--blue); }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    :focus-visible { outline: 3px solid #63b3e2; outline-offset: 3px; }
+    .site-header {
+      min-height: 88px; display: flex; align-items: center; justify-content: space-between;
+      gap: 20px; border-bottom: 1px solid #dce6f0;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--ink); }
+    .brand img { width: 42px; height: 43px; object-fit: contain; }
+    .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+    .brand-text strong { color: #173f7b; font-size: 1.15rem; letter-spacing: -.035em; }
+    .brand-text small { color: var(--muted); font-size: .69rem; letter-spacing: .035em; margin-top: 4px; }
+    .top-nav { display: flex; gap: clamp(12px, 3vw, 38px); }
+    .top-nav a { color: #51627c; text-decoration: none; font-size: .86rem; font-weight: 650; }
+    .top-nav a:hover { color: var(--blue); }
+    .panel { background: #fff; border: 1px solid #e1e8f1; border-radius: 22px; box-shadow: var(--shadow); padding: clamp(22px, 3vw, 36px); margin-top: 26px; }
+    .eyebrow { display: inline-block; color: #1684b5; font-size: .7rem; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { color: #173354; margin: 7px 0 10px; font-size: clamp(2rem, 4.3vw, 3.2rem); letter-spacing: -.045em; line-height: 1.12; }
+    h2 { color: #173354; margin: 0; font-size: clamp(1.4rem, 2.5vw, 1.95rem); letter-spacing: -.035em; }
+    h3 { color: #244665; margin: 0; font-size: 1rem; }
+    p { margin: 0; color: var(--muted); }
+    .hero { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(250px, .85fr); gap: 30px; align-items: center; }
+    .hero p { max-width: 680px; }
+    .hero-note { padding: 20px; background: linear-gradient(135deg, #f3f9fe, #fbfdff); border: 1px solid #d6e6f3; border-radius: 16px; }
+    .hero-note strong { display: block; color: #075b89; font-size: .82rem; margin-bottom: 6px; }
+    .hero-note p { font-size: .83rem; }
+    .section-heading { display: flex; align-items: start; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 21px; }
+    .section-heading p { font-size: .88rem; margin-top: 4px; }
+    .help {
+      display: inline-flex; width: 19px; height: 19px; align-items: center; justify-content: center;
+      vertical-align: middle; border: 1px solid #b8d6e8; border-radius: 50%;
+      background: #eaf5fc; color: #176497; font-size: .72rem; font-weight: 800;
+      cursor: help; position: relative; margin-left: 4px;
+    }
+    .help::after {
+      content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 10px);
+      width: min(280px, 75vw); padding: 10px 12px; transform: translate(-50%, 5px);
+      border-radius: 10px; background: #12375d; color: white; font-size: .76rem;
+      line-height: 1.35; font-weight: 400; text-align: left; box-shadow: 0 12px 25px rgba(12,41,69,.2);
+      opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .15s, transform .15s;
+      z-index: 5;
+    }
+    .help:hover::after, .help:focus-visible::after { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+    .settings { display: flex; align-items: end; flex-wrap: wrap; gap: 18px 26px; margin-bottom: 22px; }
+    .field { display: grid; gap: 6px; }
+    .field label { font-size: .8rem; font-weight: 750; color: #3b5069; }
+    .field input {
+      width: 116px; padding: 10px 12px; border: 1px solid #dbe5ef; border-radius: 10px;
+      background: #f9fbfe; color: #193d63; font-weight: 700;
+    }
+    .settings-note { font-size: .79rem; padding-bottom: 11px; }
+    .button-secondary { border: 1px solid #d9e7f2; border-radius: 9px; background: #eaf2f9; color: #3d6689; padding: 10px 14px; font-size: .78rem; font-weight: 750; }
+    .button-secondary:hover { border-color: #78b8e2; background: #dceefa; }
+    .scale-guide { display: flex; align-items: center; flex-wrap: wrap; gap: 7px 14px; padding: 12px 15px; margin-bottom: 17px; border-left: 3px solid #78b8e2; border-radius: 4px 9px 9px 4px; background: var(--soft); color: #49677f; font-size: .81rem; }
+    .scale-guide strong { color: #285b7c; }
+    .scale-guide .scale-ends { display: flex; align-items: center; gap: 7px; }
+    .scale-guide .sample-stars { color: #d39334; letter-spacing: 2px; font-size: 1.05rem; }
+    .table-scroll { overflow-x: auto; border: 1px solid #e2eaf3; border-radius: 14px; background: #fff; }
+    table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: .83rem; }
+    th, td { padding: 11px 12px; border-bottom: 1px solid #e6edf4; }
+    thead th { background: #f5f9fd; color: #49677f; font-size: .76rem; text-align: center; white-space: nowrap; }
+    thead th:first-child { text-align: left; position: sticky; left: 0; z-index: 2; min-width: 320px; max-width: 350px; border-right: 1px solid #e3ebf2; }
+    tbody th { color: #304b63; text-align: left; font-weight: 600; min-width: 320px; max-width: 350px; position: sticky; left: 0; z-index: 1; background: #fff; border-right: 1px solid #e3ebf2; }
+    tbody tr:nth-child(even) th, tbody tr:nth-child(even) td { background: #fbfdff; }
+    tbody tr:hover th, tbody tr:hover td { background: #f4f9fd; }
+    tbody td { text-align: center; min-width: 138px; }
+    tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+    .question-index { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; margin-right: 8px; border-radius: 6px; background: #e8f3fb; color: #196797; font-size: .7rem; font-weight: 800; }
+    .star-group { display: inline-flex; gap: 1px; white-space: nowrap; }
+    .star {
+      padding: 0; width: 23px; height: 29px; border: 0; background: transparent;
+      color: #bdcddd; font-size: 1.42rem; line-height: 1; transition: color .12s, transform .12s;
+    }
+    .star.is-on { color: #e1a43d; }
+    .star:hover { transform: translateY(-2px); color: #d58d1f; }
+    .star:focus-visible { outline-offset: 0; border-radius: 4px; }
+    .participant-head { display: grid; gap: 2px; }
+    .participant-head small { color: #8294a5; font-weight: 600; }
+    .participant-head.is-complete small { color: #0c827c; }
+    .summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 22px; }
+    .metric { min-height: 112px; padding: 17px 19px; border: 1px solid #e3ebf2; border-radius: 12px; background: #f9fbfe; }
+    .metric.primary { background: #edf7f8; border-color: #d6ecea; }
+    .metric .label { color: #6f8296; font-size: .69rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .metric .value { display: block; margin-top: 8px; color: #173c68; font-size: clamp(1.45rem, 3vw, 2.15rem); font-weight: 800; line-height: 1.1; letter-spacing: -.025em; }
+    .metric.primary .value { color: #087e7a; }
+    .metric .sub { display: block; margin-top: 5px; color: #77899a; font-size: .74rem; }
+    .chart-shell { padding: 20px 22px; border: 1px solid #e0eaf4; border-radius: 14px; background: linear-gradient(180deg, #f5f9fd, #f9fbfe); }
+    .chart-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 5px 15px; margin-bottom: 15px; }
+    .chart-head span { color: #77899a; font-size: .74rem; }
+    .axis { display: flex; justify-content: space-between; margin-left: 112px; color: #7b8fa0; font-size: .67rem; }
+    .chart-row { display: grid; grid-template-columns: 104px minmax(0, 1fr) 46px; gap: 8px; align-items: center; min-height: 34px; font-size: .75rem; }
+    .chart-row .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #4c657d; font-weight: 700; }
+    .track { height: 16px; border-radius: 5px; position: relative; background: repeating-linear-gradient(to right, #e1eaf3 0, #e1eaf3 1px, transparent 1px, transparent 25%), #eef4f9; overflow: hidden; }
+    .fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, #46b5d2, #1475bb); }
+    .chart-row.group .fill { background: linear-gradient(90deg, #43c4b0, #0f9189); }
+    .chart-row .score { color: #285273; font-variant-numeric: tabular-nums; font-weight: 800; text-align: right; }
+    .chart-row.pending .name, .chart-row.pending .score { color: #96a5b4; }
+    .chart-caption { margin-top: 14px; padding: 12px 15px; background: #fff; border-left: 3px solid #78b8e2; border-radius: 4px 9px 9px 4px; color: #61748a; font-size: .8rem; }
+    .percentile-card { margin-top: 20px; padding: 20px 22px; border: 1px solid #d6e6f3; border-radius: 14px; background: linear-gradient(135deg, #f3f9fe, #fbfdff 65%); }
+    .percentile-head { display: flex; align-items: start; justify-content: space-between; flex-wrap: wrap; gap: 8px 18px; }
+    .percentile-head p { margin-top: 3px; font-size: .8rem; }
+    .percentile-values { display: flex; flex-wrap: wrap; gap: 8px; margin: 17px 0 8px; }
+    .percentile-value { display: flex; align-items: baseline; gap: 8px; min-width: 145px; padding: 9px 13px; border: 1px solid #d7e7f2; border-radius: 10px; background: #fff; }
+    .percentile-value span { color: #6f8296; font-size: .7rem; font-weight: 750; text-transform: uppercase; letter-spacing: .04em; }
+    .percentile-value strong { margin-left: auto; color: #173c68; font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+    .percentile-value:last-child strong { color: #087e7a; }
+    .percentile-scroll { overflow-x: auto; }
+    #percentile-chart { display: block; width: 100%; min-width: 650px; height: auto; font-family: inherit; }
+    .percentile-note { margin-top: 8px; font-size: .77rem; }
+    .percentile-note a { font-weight: 700; }
+    .source-note { margin-top: 14px; padding: 14px 16px; border: 1px solid #d7e7f2; border-radius: 10px; background: #fff; }
+    .source-note strong { display: block; color: #285b7c; font-size: .8rem; margin-bottom: 5px; }
+    .source-note p { font-size: .76rem; line-height: 1.55; }
+    .source-note p + p { margin-top: 7px; }
+    .source-note a { font-weight: 700; }
+    .method { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .method-step { padding: 17px; border: 1px solid #d7e7f2; border-radius: 12px; background: #f8fbfe; }
+    .method-step .number { display: inline-block; margin-bottom: 8px; color: #1684b5; font-size: .69rem; font-weight: 850; letter-spacing: .1em; }
+    .method-step p { font-size: .8rem; margin-top: 5px; }
+    .site-footer { display: grid; gap: 13px; margin-top: 26px; padding: 28px 6px 0; border-top: 1px solid #dce6ef; color: #61748a; }
+    .footer-person { display: flex; gap: 16px; align-items: center; }
+    .footer-mark { padding: 10px; border-radius: 9px; background: #e2eff8; color: #26658e; font-size: .75rem; font-weight: 850; }
+    .footer-person div { display: grid; gap: 2px; }
+    .footer-person strong { color: #284762; font-size: .84rem; }
+    .footer-person span, .site-footer small { color: #718399; font-size: .75rem; }
+    @media (max-width: 760px) {
+      body { padding: 0 14px 36px; }
+      .site-header { min-height: 72px; }
+      .top-nav { display: none; }
+      .hero { grid-template-columns: 1fr; gap: 17px; }
+      .panel { margin-top: 17px; padding: 21px 18px; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .summary-grid .metric:first-child { grid-column: 1 / -1; }
+      .method { grid-template-columns: 1fr; }
+      thead th:first-child, tbody th { min-width: 250px; max-width: 250px; }
+    }
+    @media (max-width: 430px) {
+      .brand-text small { display: none; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .summary-grid .metric:first-child { grid-column: auto; }
+      .metric { min-height: 95px; }
+      .chart-shell { padding: 16px 12px; }
+      .chart-row { grid-template-columns: 75px minmax(0, 1fr) 35px; gap: 5px; }
+      .axis { margin-left: 80px; }
+      thead th:first-child, tbody th { min-width: 160px; max-width: 160px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Back to Edu Tools">
+        <img src="assets/ulpgc-logo.svg" alt="ULPGC logo" width="42" height="43">
+        <span class="brand-text"><strong>ULPGC</strong><small>SUS Group Calculator</small></span>
+      </a>
+      <nav class="top-nav" aria-label="Main navigation">
+        <a href="#responses">Responses</a><a href="#results">Results</a><a href="#method">How scoring works</a>
+      </nav>
+    </header>
+
+    <section class="panel hero">
+      <div>
+        <span class="eyebrow">UX analysis · Group exercise</span>
+        <h1>System Usability Scale</h1>
+        <p>Collect answers from a group and see each participant’s SUS score alongside the group average. Rate all ten statements for a participant to include their score in the results.</p>
+      </div>
+      <div class="hero-note">
+        <strong>What does SUS measure? <span class="help" tabindex="0" role="img" aria-label="Help: The System Usability Scale is a ten-item questionnaire for perceived usability. Its final score runs from 0 to 100." data-tip="The System Usability Scale is a ten-item questionnaire for perceived usability. Its final score runs from 0 to 100.">?</span></strong>
+        <p>A quick view of how people perceive a system’s ease of use. The score is a scale value, not the percentage of questions answered.</p>
+      </div>
+    </section>
+
+    <section class="panel" id="responses">
+      <div class="section-heading">
+        <div><h2>Response table <span class="help" tabindex="0" role="img" aria-label="Help: Each column is one participant and each row is one SUS statement." data-tip="Each column is one participant and each row is one SUS statement. Select one rating from 1 to 5 in every cell.">?</span></h2><p>One column per participant, one row per statement.</p></div>
+        <button class="button-secondary" id="clear-responses" type="button">Clear all responses</button>
+      </div>
+      <div class="settings">
+        <div class="field"><label for="participant-count">Number of participants <span class="help" tabindex="0" role="img" aria-label="Help: Add or remove participant columns. Scores update automatically. Hidden responses return if you increase the count again." data-tip="Add or remove participant columns (1–20). Scores update automatically. If you decrease the count, hidden responses return when you increase it again.">?</span></label><input id="participant-count" type="number" min="1" max="20" step="1" value="5" inputmode="numeric"></div>
+        <p class="settings-note">Use the stars to select a response. Answers are saved in this browser. The table scrolls sideways on small screens.</p>
+      </div>
+      <div class="scale-guide">
+        <strong>Likert scale <span class="help" tabindex="0" role="img" aria-label="Help: A Likert scale measures agreement with a statement. Select 1 for strongly disagree through 5 for strongly agree." data-tip="A Likert scale measures agreement with a statement. Here, 1 means strongly disagree, 3 means neutral, and 5 means strongly agree.">?</span></strong>
+        <span class="scale-ends">1 = Strongly disagree</span><span class="sample-stars" aria-hidden="true">★ ★ ★ ★ ★</span><span class="scale-ends">5 = Strongly agree</span>
+      </div>
+      <div class="table-scroll" tabindex="0" aria-label="Scrollable SUS response table">
+        <table id="response-table"><thead><tr id="participant-headers"><th scope="col">SUS statement</th></tr></thead><tbody id="response-body"></tbody></table>
+      </div>
+    </section>
+
+    <section class="panel" id="results">
+      <div class="section-heading"><div><h2>Group results <span class="help" tabindex="0" role="img" aria-label="Help: The group score is the arithmetic mean of completed participant SUS scores." data-tip="The group score is the arithmetic mean of completed participant SUS scores. Incomplete participants are excluded until all ten answers are selected.">?</span></h2><p>Results update as soon as a participant finishes all ten answers.</p></div></div>
+      <div class="summary-grid" aria-live="polite">
+        <div class="metric primary"><span class="label">Group SUS score</span><strong class="value" id="group-score">—</strong><span class="sub">Average of completed scores · 0–100</span></div>
+        <div class="metric"><span class="label">Completed</span><strong class="value" id="completed-count">0 / 5</strong><span class="sub">Participants with 10 responses</span></div>
+        <div class="metric"><span class="label">Responses entered</span><strong class="value" id="response-count">0 / 50</strong><span class="sub">Across visible participants</span></div>
+      </div>
+      <div class="chart-shell" role="img" id="score-chart" aria-label="SUS scores chart">
+        <div class="chart-head"><h3>SUS score by participant</h3><span>Scale: 0–100</span></div>
+        <div class="axis" aria-hidden="true"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+        <div id="chart-rows"></div>
+      </div>
+      <p class="chart-caption">Only complete questionnaires receive a score. The group bar is the arithmetic mean of those scores. SUS points are not a percentage.</p>
+      <div class="percentile-card">
+        <div class="percentile-head"><div><h3>SUS score → percentile → grade <span class="help" tabindex="0" role="img" aria-label="Help: The curve compares a SUS score with published SUS percentile norms. The projected percentile is approximate; letters use the curved SUS grading scale." data-tip="The curve compares a SUS score with published SUS percentile norms. The projected percentile is approximate; letters use the curved SUS grading scale.">?</span></h3><p>The orange guides project the group’s SUS score onto the reference curve. Scroll sideways to explore the chart on a small screen.</p></div></div>
+        <div class="percentile-values" aria-live="polite">
+          <div class="percentile-value"><span>SUS score</span><strong id="curve-score">—</strong></div>
+          <div class="percentile-value"><span>Percentile</span><strong id="curve-percentile">—</strong></div>
+          <div class="percentile-value"><span>Grade</span><strong id="curve-grade">—</strong></div>
+        </div>
+        <div class="percentile-scroll" tabindex="0" aria-label="Scrollable SUS percentile curve"><svg id="percentile-chart" viewBox="0 0 900 410" role="img" aria-label="SUS score to percentile curve with F to A grade bands"></svg></div>
+        <p class="percentile-note">Percentile rank compares the group score with reference SUS results; it is not the percentage of questions answered.</p>
+        <div class="source-note">
+          <strong>Where the curve data come from</strong>
+          <p>The supplied Excel workbook contains a picture of the curve, not its underlying data series. The plotted score-to-percentile pairs come from the SUS percentile lookup credited to Sauro (2011) in <a href="https://measuringu.com/wp-content/uploads/2017/05/PracticalStatsCompanion_2ndED.pdf" target="_blank" rel="noopener noreferrer">Sauro and Lewis’s Quantifying the User Experience companion material</a>. Example SUS score → percentile values: 50 → 13.1, 68 → 50.0, 75 → 73.2, and 80 → 88.1. The app adds a 0 → 0 plotting endpoint and linearly interpolates between selected published points for group averages, so intermediate percentiles are estimates.</p>
+          <p>The letters use <a href="https://measuringu.com/sus-items/" target="_blank" rel="noopener noreferrer">MeasuringU’s curved SUS grade thresholds</a>, with plus and minus grades combined: F below 51.7; D from 51.7 to below 62.7; C to below 72.6; B to below 78.9; A from 78.9 upward. The historical reference data are external to this class.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="method">
+      <div class="section-heading"><div><h2>How scoring works</h2><p>The calculation follows the supplied SUS spreadsheet.</p></div></div>
+      <div class="method">
+        <div class="method-step"><span class="number">STEP 01</span><h3>Odd-numbered statements</h3><p>Subtract 1 from the selected rating for questions 1, 3, 5, 7 and 9.</p></div>
+        <div class="method-step"><span class="number">STEP 02</span><h3>Even-numbered statements</h3><p>Subtract the selected rating from 5 for questions 2, 4, 6, 8 and 10.</p></div>
+        <div class="method-step"><span class="number">STEP 03</span><h3>Participant and group scores</h3><p>Add the ten adjusted values, multiply by 2.5, then average the completed participant scores.</p></div>
+      </div>
+    </section>
+
+    <footer class="site-footer"><div class="footer-person"><span class="footer-mark">ULPGC</span><div><strong>Prof. Dr. José Miguel Santana Núñez</strong><span>Department of Computer Engineering · University of Las Palmas de Gran Canaria</span></div></div></footer>
+  </main>
+  <script>
+    const questions = [
+      "I think that I would like to use this system frequently.",
+      "I found the system unnecessarily complex.",
+      "I thought the system was easy to use.",
+      "I think that I would need the support of a technical person to be able to use this system.",
+      "I found the various functions in this system were well integrated.",
+      "I thought there was too much inconsistency in this system.",
+      "I would imagine that most people would learn to use this system very quickly.",
+      "I found the system very cumbersome to use.",
+      "I felt very confident using the system.",
+      "I needed to learn a lot of things before I could get going with this system."
+    ];
+    const maxParticipants = 20;
+    const storageKey = "edu-tools-sus-group-v1";
+    const state = { count: 5, answers: Array.from({ length: maxParticipants }, () => Array(10).fill(null)) };
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey));
+      if (saved && Number.isInteger(saved.count) && saved.count >= 1 && saved.count <= maxParticipants && Array.isArray(saved.answers)) {
+        state.count = saved.count;
+        state.answers = state.answers.map((row, p) => row.map((_, q) => {
+          const value = saved.answers[p]?.[q];
+          return Number.isInteger(value) && value >= 1 && value <= 5 ? value : null;
+        }));
+      }
+    } catch (_) { /* The calculator remains usable if storage is unavailable. */ }
+
+    const countInput = document.getElementById("participant-count");
+    const headerRow = document.getElementById("participant-headers");
+    const responseBody = document.getElementById("response-body");
+    const chartRows = document.getElementById("chart-rows");
+    countInput.value = state.count;
+
+    function save() {
+      try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch (_) { /* Optional local persistence. */ }
+    }
+
+    function participantScore(answers) {
+      if (answers.some(value => value === null)) return null;
+      const adjusted = answers.reduce((sum, value, index) => sum + (index % 2 === 0 ? value - 1 : 5 - value), 0);
+      return adjusted * 2.5;
+    }
+
+    function formatScore(score) {
+      return score === null ? "—" : score.toLocaleString("en-US", { maximumFractionDigits: 3 });
+    }
+
+    // Published SUS percentile norms, sampled more densely where the curve rises fastest.
+    // Scores between points are estimated by linear interpolation.
+    const percentilePoints = [
+      [0, 0], [5, .3], [10, .5], [15, .7], [20, 1.1], [25, 1.6],
+      [30, 2.5], [35, 3.8], [40, 5.7], [45, 8.7], [50, 13.1],
+      [55, 19.6], [60, 28.8], [65, 41.1], [66, 43.9], [67, 46.9],
+      [68, 50], [69, 53.2], [70, 56.4], [71, 59.8], [72, 63.1],
+      [73, 66.5], [74, 69.9], [75, 73.2], [76, 76.5], [77, 79.7],
+      [78, 82.7], [79, 85.5], [80, 88.1], [81, 90.5], [82, 92.6],
+      [83, 94.4], [84, 95.9], [85, 97.2], [86, 98.1], [87, 98.8],
+      [88, 99.3], [89, 99.6], [90, 99.8], [91, 99.9], [92, 100], [100, 100]
+    ];
+    const gradeBands = [
+      { start: 0, end: 51.7, grade: "F", fill: "#edf1f6" },
+      { start: 51.7, end: 62.7, grade: "D", fill: "#e7f0f8" },
+      { start: 62.7, end: 72.6, grade: "C", fill: "#ddf0f9" },
+      { start: 72.6, end: 78.9, grade: "B", fill: "#ddf3ef" },
+      { start: 78.9, end: 100, grade: "A", fill: "#d5efe5" }
+    ];
+
+    function percentileAt(score) {
+      if (score <= 0) return 0;
+      if (score >= 100) return 100;
+      const upper = percentilePoints.findIndex(point => point[0] >= score);
+      const [lowScore, lowPercentile] = percentilePoints[upper - 1];
+      const [highScore, highPercentile] = percentilePoints[upper];
+      return lowPercentile + (score - lowScore) * (highPercentile - lowPercentile) / (highScore - lowScore);
+    }
+
+    function gradeAt(score) {
+      return gradeBands.find(band => score < band.end)?.grade ?? "A";
+    }
+
+    function percentileLabel(percentile) {
+      const rounded = Math.round(percentile);
+      const suffix = rounded % 100 >= 11 && rounded % 100 <= 13 ? "th" :
+        ({ 1: "st", 2: "nd", 3: "rd" }[rounded % 10] ?? "th");
+      return `≈${rounded}${suffix}`;
+    }
+
+    const svgNS = "http://www.w3.org/2000/svg";
+    function addSvg(parent, tag, attributes, value) {
+      const element = document.createElementNS(svgNS, tag);
+      for (const [name, attribute] of Object.entries(attributes)) element.setAttribute(name, attribute);
+      if (value !== undefined) element.textContent = value;
+      parent.append(element);
+      return element;
+    }
+
+    function renderPercentileChart(score) {
+      const svg = document.getElementById("percentile-chart");
+      const percentile = score === null ? null : percentileAt(score);
+      const grade = score === null ? null : gradeAt(score);
+      document.getElementById("curve-score").textContent = formatScore(score);
+      document.getElementById("curve-percentile").textContent = percentile === null ? "—" : percentileLabel(percentile);
+      document.getElementById("curve-grade").textContent = grade ?? "—";
+      svg.setAttribute("aria-label", score === null ? "SUS score to percentile curve; no completed group score yet" :
+        `Group SUS score ${formatScore(score)} projects to approximately the ${Math.round(percentile)}th percentile and grade ${grade}`);
+      svg.replaceChildren();
+
+      const left = 70, right = 852, top = 34, bottom = 280;
+      const x = value => left + value / 100 * (right - left);
+      const y = value => bottom - value / 100 * (bottom - top);
+      for (const tick of [0, 25, 50, 75, 100]) {
+        addSvg(svg, "line", { x1: left, x2: right, y1: y(tick), y2: y(tick), stroke: "#d7e3ed", "stroke-width": 1 });
+        addSvg(svg, "text", { x: left - 11, y: y(tick) + 4, "text-anchor": "end", fill: "#6f8296", "font-size": 12 }, `${tick}%`);
+      }
+      for (const tick of [0, 20, 40, 60, 80, 100]) {
+        addSvg(svg, "line", { x1: x(tick), x2: x(tick), y1: bottom, y2: bottom + 5, stroke: "#9ab0c2" });
+        addSvg(svg, "text", { x: x(tick), y: bottom + 23, "text-anchor": "middle", fill: "#6f8296", "font-size": 12 }, tick);
+      }
+      addSvg(svg, "line", { x1: left, x2: right, y1: bottom, y2: bottom, stroke: "#9ab0c2", "stroke-width": 1.4 });
+      addSvg(svg, "line", { x1: left, x2: left, y1: top, y2: bottom, stroke: "#9ab0c2", "stroke-width": 1.4 });
+      addSvg(svg, "text", { x: 19, y: 157, transform: "rotate(-90 19 157)", "text-anchor": "middle", fill: "#49677f", "font-size": 13, "font-weight": 700 }, "Percentile rank");
+      addSvg(svg, "text", { x: (left + right) / 2, y: 402, "text-anchor": "middle", fill: "#49677f", "font-size": 13, "font-weight": 700 }, "SUS score");
+
+      const path = percentilePoints.map(([scoreValue, percentileValue], index) =>
+        `${index === 0 ? "M" : "L"}${x(scoreValue).toFixed(2)},${y(percentileValue).toFixed(2)}`).join(" ");
+      addSvg(svg, "path", { d: path, fill: "none", stroke: "#1475bb", "stroke-width": 3.5, "stroke-linecap": "round", "stroke-linejoin": "round" });
+      for (const [scoreValue, percentileValue] of percentilePoints.filter(point => point[0] % 10 === 0)) {
+        addSvg(svg, "circle", { cx: x(scoreValue), cy: y(percentileValue), r: 3, fill: "#1475bb" });
+      }
+
+      addSvg(svg, "text", { x: left, y: 329, fill: "#627d92", "font-size": 11, "font-weight": 700 }, "CURVED GRADE");
+      for (const band of gradeBands) {
+        const active = band.grade === grade;
+        addSvg(svg, "rect", { x: x(band.start), y: 340, width: x(band.end) - x(band.start), height: 35,
+          fill: band.fill, stroke: active ? "#df893a" : "#fff", "stroke-width": active ? 2.5 : 2, rx: 5 });
+        addSvg(svg, "text", { x: (x(band.start) + x(band.end)) / 2, y: 363, "text-anchor": "middle",
+          fill: active ? "#9c541b" : "#37627a", "font-size": 18, "font-weight": 800 }, band.grade);
+      }
+
+      if (score !== null) {
+        const px = x(score), py = y(percentile);
+        addSvg(svg, "line", { x1: px, x2: px, y1: py, y2: bottom, stroke: "#e28637", "stroke-width": 2.2, "stroke-dasharray": "5 5" });
+        addSvg(svg, "line", { x1: left, x2: px, y1: py, y2: py, stroke: "#e28637", "stroke-width": 2.2, "stroke-dasharray": "5 5" });
+        addSvg(svg, "circle", { cx: px, cy: py, r: 8, fill: "#fff", stroke: "#db7c2c", "stroke-width": 3.5 });
+        addSvg(svg, "text", { x: px > 770 ? px - 13 : px + 13, y: py < 55 ? py + 25 : py - 12,
+          "text-anchor": px > 770 ? "end" : "start", fill: "#a9591b", "font-size": 13, "font-weight": 800 }, "GROUP");
+        const scroller = svg.parentElement;
+        if (scroller.scrollWidth > scroller.clientWidth) {
+          const anchor = grade === "F" ? .75 : grade === "D" ? .65 : grade === "A" ? .35 : .5;
+          scroller.scrollLeft = Math.max(0, px * svg.getBoundingClientRect().width / 900 - scroller.clientWidth * anchor);
+        }
+      }
+    }
+
+    function renderTable() {
+      headerRow.replaceChildren();
+      const corner = document.createElement("th");
+      corner.scope = "col";
+      corner.textContent = "SUS statement";
+      headerRow.append(corner);
+      for (let p = 0; p < state.count; p++) {
+        const th = document.createElement("th");
+        th.scope = "col";
+        const label = document.createElement("div");
+        label.className = "participant-head" + (participantScore(state.answers[p]) !== null ? " is-complete" : "");
+        const name = document.createElement("span");
+        name.textContent = `Participant ${p + 1}`;
+        const progress = document.createElement("small");
+        progress.textContent = `${state.answers[p].filter(value => value !== null).length} / 10 answered`;
+        label.append(name, progress);
+        th.append(label);
+        headerRow.append(th);
+      }
+      responseBody.replaceChildren();
+      questions.forEach((question, q) => {
+        const tr = document.createElement("tr");
+        const th = document.createElement("th");
+        th.scope = "row";
+        const index = document.createElement("span");
+        index.className = "question-index";
+        index.textContent = q + 1;
+        th.append(index, document.createTextNode(question));
+        tr.append(th);
+        for (let p = 0; p < state.count; p++) {
+          const td = document.createElement("td");
+          const group = document.createElement("div");
+          group.className = "star-group";
+          group.setAttribute("role", "group");
+          group.setAttribute("aria-label", `Participant ${p + 1}, question ${q + 1}. Rating from 1 strongly disagree to 5 strongly agree`);
+          for (let value = 1; value <= 5; value++) {
+            const star = document.createElement("button");
+            star.type = "button";
+            star.className = "star" + (state.answers[p][q] !== null && value <= state.answers[p][q] ? " is-on" : "");
+            star.textContent = "★";
+            star.dataset.participant = p;
+            star.dataset.question = q;
+            star.dataset.value = value;
+            star.setAttribute("aria-label", `${value} of 5: ${value === 1 ? "strongly disagree" : value === 3 ? "neutral" : value === 5 ? "strongly agree" : "agreement level " + value}`);
+            star.setAttribute("aria-pressed", String(state.answers[p][q] === value));
+            star.title = `${value} of 5`;
+            group.append(star);
+          }
+          td.append(group);
+          tr.append(td);
+        }
+        responseBody.append(tr);
+      });
+    }
+
+    function addChartRow(name, score, group = false) {
+      const row = document.createElement("div");
+      row.className = "chart-row" + (group ? " group" : "") + (score === null ? " pending" : "");
+      const label = document.createElement("span");
+      label.className = "name";
+      label.textContent = name;
+      const track = document.createElement("div");
+      track.className = "track";
+      const fill = document.createElement("div");
+      fill.className = "fill";
+      fill.style.width = `${score ?? 0}%`;
+      track.append(fill);
+      const value = document.createElement("span");
+      value.className = "score";
+      value.textContent = formatScore(score);
+      row.append(label, track, value);
+      chartRows.append(row);
+    }
+
+    function renderResults() {
+      const visible = state.answers.slice(0, state.count);
+      const scores = visible.map(participantScore);
+      const completed = scores.filter(score => score !== null);
+      const average = completed.length ? completed.reduce((sum, score) => sum + score, 0) / completed.length : null;
+      const entered = visible.reduce((sum, answers) => sum + answers.filter(value => value !== null).length, 0);
+      document.getElementById("group-score").textContent = formatScore(average);
+      document.getElementById("completed-count").textContent = `${completed.length} / ${state.count}`;
+      document.getElementById("response-count").textContent = `${entered} / ${state.count * 10}`;
+      chartRows.replaceChildren();
+      addChartRow("Group mean", average, true);
+      scores.forEach((score, index) => addChartRow(`Participant ${index + 1}`, score));
+      const chartDescription = scores.map((score, index) => `Participant ${index + 1}: ${score === null ? "incomplete" : formatScore(score) + " out of 100"}`).join("; ");
+      document.getElementById("score-chart").setAttribute("aria-label", `${average === null ? "No complete SUS scores yet" : "Group SUS score " + formatScore(average) + " out of 100"}; ${chartDescription}`);
+      renderPercentileChart(average);
+    }
+
+    function render() { renderTable(); renderResults(); }
+
+    responseBody.addEventListener("click", event => {
+      const star = event.target.closest("button.star");
+      if (!star) return;
+      const p = Number(star.dataset.participant);
+      const q = Number(star.dataset.question);
+      const value = Number(star.dataset.value);
+      state.answers[p][q] = value;
+      const group = star.parentElement;
+      for (const button of group.children) {
+        const rating = Number(button.dataset.value);
+        button.classList.toggle("is-on", rating <= value);
+        button.setAttribute("aria-pressed", String(rating === value));
+      }
+      const progress = headerRow.children[p + 1].querySelector("small");
+      progress.textContent = `${state.answers[p].filter(answer => answer !== null).length} / 10 answered`;
+      headerRow.children[p + 1].querySelector(".participant-head").classList.toggle("is-complete", participantScore(state.answers[p]) !== null);
+      save();
+      renderResults();
+    });
+
+    countInput.addEventListener("change", () => {
+      const value = Number(countInput.value);
+      state.count = Number.isFinite(value) ? Math.max(1, Math.min(maxParticipants, Math.round(value))) : state.count;
+      countInput.value = state.count;
+      save();
+      render();
+    });
+
+    document.getElementById("clear-responses").addEventListener("click", () => {
+      if (!window.confirm("Clear all responses for every participant?")) return;
+      state.answers = Array.from({ length: maxParticipants }, () => Array(10).fill(null));
+      save();
+      render();
+    });
+
+    window.addEventListener("resize", renderResults);
+    render();
+  </script>
+</body>
+</html>
