@@ -204,11 +204,11 @@
 
     <section class="panel" id="responses">
       <div class="section-heading">
-        <div><h2>Response table <span class="help" tabindex="0" role="img" aria-label="Help: Each column is one participant and each row is one SUS statement." data-tip="Each column is one participant and each row is one SUS statement. Select one rating from 1 to 5 in every cell.">?</span></h2><p>One column per participant, one row per statement.</p></div>
+        <div><h2>Response table</h2><p>One column per participant, one row per statement.</p></div>
         <button class="button-secondary" id="clear-responses" type="button">Clear all responses</button>
       </div>
       <div class="settings">
-        <div class="field"><label for="participant-count">Number of participants <span class="help" tabindex="0" role="img" aria-label="Help: Add or remove participant columns. Scores update automatically. Hidden responses return if you increase the count again." data-tip="Add or remove participant columns (1–20). Scores update automatically. If you decrease the count, hidden responses return when you increase it again.">?</span></label><input id="participant-count" type="number" min="1" max="20" step="1" value="5" inputmode="numeric"></div>
+        <div class="field"><label for="participant-count">Number of participants</label><input id="participant-count" type="number" min="1" max="20" step="1" value="5" inputmode="numeric"></div>
         <p class="settings-note">Use the stars to select a response. Answers are saved in this browser. The table scrolls sideways on small screens.</p>
       </div>
       <div class="scale-guide">
@@ -221,7 +221,7 @@
     </section>
 
     <section class="panel" id="results">
-      <div class="section-heading"><div><h2>Group results <span class="help" tabindex="0" role="img" aria-label="Help: The group score is the arithmetic mean of completed participant SUS scores." data-tip="The group score is the arithmetic mean of completed participant SUS scores. Incomplete participants are excluded until all ten answers are selected.">?</span></h2><p>Results update as soon as a participant finishes all ten answers.</p></div></div>
+      <div class="section-heading"><div><h2>Group results</h2><p>Results update as soon as a participant finishes all ten answers.</p></div></div>
       <div class="summary-grid" aria-live="polite">
         <div class="metric primary"><span class="label">Group SUS score</span><strong class="value" id="group-score">—</strong><span class="sub">Average of completed scores · 0–100</span></div>
         <div class="metric"><span class="label">Completed</span><strong class="value" id="completed-count">0 / 5</strong><span class="sub">Participants with 10 responses</span></div>
@@ -243,15 +243,15 @@
         <div class="percentile-scroll" tabindex="0" aria-label="Scrollable SUS percentile curve"><svg id="percentile-chart" viewBox="0 0 900 410" role="img" aria-label="SUS score to percentile curve with F to A grade bands"></svg></div>
         <p class="percentile-note">Percentile rank compares the group score with reference SUS results; it is not the percentage of questions answered.</p>
         <div class="source-note">
-          <strong>Where the curve data come from</strong>
-          <p>The supplied Excel workbook contains a picture of the curve, not its underlying data series. The plotted score-to-percentile pairs come from the SUS percentile lookup credited to Sauro (2011) in <a href="https://measuringu.com/wp-content/uploads/2017/05/PracticalStatsCompanion_2ndED.pdf" target="_blank" rel="noopener noreferrer">Sauro and Lewis’s Quantifying the User Experience companion material</a>. Example SUS score → percentile values: 50 → 13.1, 68 → 50.0, 75 → 73.2, and 80 → 88.1. The app adds a 0 → 0 plotting endpoint and linearly interpolates between selected published points for group averages, so intermediate percentiles are estimates.</p>
-          <p>The letters use <a href="https://measuringu.com/sus-items/" target="_blank" rel="noopener noreferrer">MeasuringU’s curved SUS grade thresholds</a>, with plus and minus grades combined: F below 51.7; D from 51.7 to below 62.7; C to below 72.6; B to below 78.9; A from 78.9 upward. The historical reference data are external to this class.</p>
+          <strong>Understanding the curve</strong>
+          <p>The curve follows the benchmarks explained in Jeff Sauro’s <a href="https://measuringu.com/interpret-sus-score/" target="_blank" rel="noopener noreferrer">5 Ways to Interpret a SUS Score</a>. Its score-to-percentile points come from the <a href="https://measuringu.com/wp-content/uploads/2017/05/PracticalStatsCompanion_2ndED.pdf" target="_blank" rel="noopener noreferrer">SUS percentile lookup in Sauro and Lewis’s companion material</a>; values between points are estimated by linear interpolation.</p>
+          <p>The letters follow <a href="https://measuringu.com/sus-items/" target="_blank" rel="noopener noreferrer">MeasuringU’s curved SUS grading scale</a>, with plus and minus grades grouped under A, B or C.</p>
         </div>
       </div>
     </section>
 
     <section class="panel" id="method">
-      <div class="section-heading"><div><h2>How scoring works</h2><p>The calculation follows the supplied SUS spreadsheet.</p></div></div>
+      <div class="section-heading"><div><h2>How scoring works</h2><p>The standard SUS scoring rule converts ten ratings into a score from 0 to 100.</p></div></div>
       <div class="method">
         <div class="method-step"><span class="number">STEP 01</span><h3>Odd-numbered statements</h3><p>Subtract 1 from the selected rating for questions 1, 3, 5, 7 and 9.</p></div>
         <div class="method-step"><span class="number">STEP 02</span><h3>Even-numbered statements</h3><p>Subtract the selected rating from 5 for questions 2, 4, 6, 8 and 10.</p></div>

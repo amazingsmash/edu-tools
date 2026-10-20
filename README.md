@@ -23,7 +23,7 @@ El repositorio incluye actualmente:
 - `ui_elements_catalog.html`: catalogo de elementos de interfaz reutilizables.
 - `temp_script.js`: script auxiliar utilizado durante el desarrollo.
 
-La curva de percentiles de `sus-calculator.html` usa puntos del [material complementario de Sauro y Lewis](https://measuringu.com/wp-content/uploads/2017/05/PracticalStatsCompanion_2ndED.pdf) y los [umbrales de grades de MeasuringU](https://measuringu.com/sus-items/). La app interpola los percentiles entre puntos; el Excel de referencia contiene la gr&aacute;fica como imagen.
+La curva de percentiles de `sus-calculator.html` usa puntos del [material complementario de Sauro y Lewis](https://measuringu.com/wp-content/uploads/2017/05/PracticalStatsCompanion_2ndED.pdf) y los [umbrales de grades de MeasuringU](https://measuringu.com/sus-items/). La app interpola los percentiles entre puntos publicados.
 
 ## Uso
 
