@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explora el vocabulario de programación en un editor Python con definiciones en español e inglés.">
+  <title>Vocabulario de programación | Edu Tools · ULPGC</title>
+  <style>
+    :root { color-scheme: light; --bg: #f4f7fb; --ink: #14243e; --muted: #64748b; --blue: #1475bb; --line: #dfe7f1; --soft: #f5f9fd; font-family: "Segoe UI", "Inter", system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 0 24px 40px; background: radial-gradient(circle at 10% 0%, #e8f2fd, transparent 32%), var(--bg); color: var(--ink); line-height: 1.5; }
+    main { width: min(1200px, 100%); margin: auto; }
+    a { color: var(--blue); }
+    button, textarea { font: inherit; }
+    button { cursor: pointer; }
+    :focus-visible { outline: 3px solid #63b3e2; outline-offset: 3px; }
+    .site-header, .brand, .header-actions, .toolbar, .editor-footer { display: flex; align-items: center; }
+    .site-header { min-height: 88px; justify-content: space-between; gap: 18px; border-bottom: 1px solid var(--line); }
+    .brand { gap: 12px; color: var(--ink); text-decoration: none; }
+    .brand img { width: 42px; height: 43px; }
+    .brand-text { display: grid; line-height: 1.15; }
+    .brand-text strong { color: #173f7b; font-size: 1.15rem; letter-spacing: -.035em; }
+    .brand-text small { color: var(--muted); font-size: .69rem; margin-top: 4px; }
+    .header-actions { gap: 22px; }
+    .back { font-size: .84rem; font-weight: 650; text-decoration: none; }
+    .button { border: 1px solid #d5e3ef; border-radius: 9px; padding: 9px 14px; background: #fff; color: #315c7d; font-size: .8rem; font-weight: 700; }
+    .button:hover { background: #eaf4fc; border-color: #86bddf; }
+    #language-toggle { min-width: 108px; }
+    .hero { padding: 34px 0 27px; display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; }
+    .eyebrow { color: #1684b5; font-size: .7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { color: #173354; margin: 7px 0 12px; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -.045em; line-height: 1.13; }
+    p { color: var(--muted); margin: 0; }
+    .hero p { max-width: 740px; font-size: .94rem; }
+    .hero-badge { display: grid; place-items: center; gap: 3px; padding: 18px 24px; border: 1px solid #d6e6f3; border-radius: 16px; background: #edf6fc; color: #176497; }
+    .hero-badge strong { font-size: 1.8rem; line-height: 1.1; }
+    .hero-badge span { font-size: .76rem; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 22px; align-items: start; }
+    .panel { background: #fff; border: 1px solid #e1e8f1; border-radius: 18px; box-shadow: 0 12px 38px rgba(24, 49, 83, .055); overflow: hidden; }
+    .toolbar { justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 15px 20px; border-bottom: 1px solid var(--line); background: #fbfdff; }
+    .file { display: flex; align-items: center; gap: 9px; font: 600 .82rem Consolas, monospace; color: #3b5069; }
+    .file-icon { display: grid; place-items: center; width: 26px; height: 26px; background: #e7f2fb; border-radius: 6px; color: var(--blue); font-size: .67rem; }
+    .editor-actions { display: flex; gap: 8px; }
+    .editor-actions .button { padding: 6px 10px; font-size: .73rem; }
+    .editor-scroll { position: relative; overflow: auto; max-height: 640px; background: #fff; }
+    .editor-surface { position: relative; min-width: 100%; width: max-content; }
+    .code, #code-input { margin: 0; padding: 22px 24px 22px 58px; border: 0; font: 14px/26px Consolas, "Cascadia Code", "Courier New", monospace; letter-spacing: 0; tab-size: 4; white-space: pre; overflow-wrap: normal; word-break: normal; }
+    .code { position: relative; min-width: 100%; color: #27435e; pointer-events: none; }
+    #code-input { position: absolute; inset: 0; width: 100%; height: 100%; resize: none; overflow: hidden; color: transparent; -webkit-text-fill-color: transparent; caret-color: #124e80; background: transparent; outline: none; border-radius: 0; }
+    #code-input::selection { background: rgba(93, 166, 219, .24); }
+    .editor-scroll:focus-within { box-shadow: inset 0 0 0 2px #78b8e2; }
+    .line-numbers { position: absolute; top: 22px; left: 0; width: 42px; color: #9aabbc; text-align: right; font: 12px/26px Consolas, monospace; pointer-events: none; user-select: none; }
+    .line-numbers span { display: block; }
+    .token { border-radius: 3px; }
+    .token.keyword, .token.conditional, .token.loop, .token.returnValue { color: #8548ab; }
+    .token.function, .token.class { color: #126da1; }
+    .token.string { color: #18816e; }
+    .token.number, .token.constant { color: #af641d; }
+    .token.operator { color: #686bc0; }
+    .token.comment { color: #8292a2; font-style: italic; }
+    .token.parameter { color: #a85a25; }
+    .token.is-active { background: #dff0ff; box-shadow: 0 0 0 1px #a1cceb; }
+    .editor-footer { gap: 12px; justify-content: space-between; padding: 10px 20px; border-top: 1px solid var(--line); background: #f8fbfe; color: #6a8196; font-size: .72rem; }
+    .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1a9b88; margin-right: 6px; }
+    .editor-note { padding: 14px 20px; border-top: 1px solid var(--line); font-size: .77rem; line-height: 1.6; }
+    .inspector { padding: 22px; }
+    .inspector h2 { margin: 0 0 13px; color: #244665; font-size: 1rem; }
+    .detail-icon { display: grid; place-items: center; width: 39px; height: 39px; border-radius: 11px; background: #eaf4fc; color: #1475bb; font: 700 1.1rem Consolas, monospace; margin-bottom: 14px; }
+    #detail-title { margin: 0 0 8px; color: #173354; font-size: 1.18rem; letter-spacing: -.02em; }
+    #detail-definition { min-height: 95px; font-size: .84rem; }
+    .detail-example { padding: 12px; border-radius: 10px; background: var(--soft); margin-top: 17px; }
+    .detail-example span { display: block; color: #6d8296; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+    #detail-code { font: .79rem/1.5 Consolas, monospace; color: #196797; overflow-wrap: anywhere; }
+    .inspector-hint { margin-top: 16px; padding-top: 15px; border-top: 1px solid var(--line); font-size: .74rem; }
+    .glossary { margin-top: 25px; padding: 25px; }
+    .section-heading { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; margin-bottom: 17px; }
+    .section-heading h2 { margin: 0; font-size: 1.15rem; color: #173354; letter-spacing: -.02em; }
+    .section-heading p { font-size: .8rem; }
+    .concepts { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 9px; }
+    .concept { display: flex; align-items: center; gap: 10px; min-height: 47px; padding: 10px 12px; border: 1px solid #e1eaf2; border-radius: 10px; background: #fbfdff; text-align: left; color: #49677f; font-size: .78rem; }
+    .concept code { display: grid; place-items: center; min-width: 29px; height: 26px; background: #eef4f9; border-radius: 6px; color: #1475bb; font-size: .75rem; }
+    .concept:hover, .concept[aria-pressed="true"] { background: #edf7ff; border-color: #78b8e2; color: #125e92; }
+    .tooltip { position: fixed; z-index: 10; width: min(320px, calc(100vw - 24px)); padding: 15px 17px; border: 1px solid #285b7c; border-radius: 12px; background: #12375d; color: white; box-shadow: 0 12px 30px #12375d33; pointer-events: auto; }
+    .tooltip[hidden] { display: none; }
+    .tooltip strong { display: block; margin-bottom: 5px; font-size: .86rem; }
+    .tooltip p { color: #e0eaf4; font-size: .78rem; line-height: 1.5; }
+    .tooltip small { display: block; margin-top: 8px; color: #b8d7ed; font-size: .7rem; }
+    .site-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: space-between; margin-top: 26px; padding: 22px 4px 0; border-top: 1px solid var(--line); font-size: .73rem; color: #718399; }
+    .site-footer strong { color: #49677f; font-weight: 600; }
+    @media (max-width: 900px) { .workspace { grid-template-columns: minmax(0, 1fr) 255px; gap: 15px; } .inspector { padding: 18px; } }
+    @media (max-width: 720px) { body { padding: 0 14px 28px; } .site-header { min-height: 75px; } .header-actions { gap: 12px; } .back { display: none; } .hero { padding: 26px 0 22px; grid-template-columns: 1fr; } .hero-badge { display: none; } .workspace { grid-template-columns: minmax(0, 1fr); } .inspector { padding: 20px; } #detail-definition { min-height: 0; } .detail-icon { float: left; margin: 0 12px 0 0; } .inspector h2 { font-size: .8rem; } .inspector-hint { margin-top: 12px; } .glossary { padding: 20px; } .section-heading { display: block; } .section-heading p { margin-top: 5px; } .concepts { grid-template-columns: repeat(2, minmax(0, 1fr)); } .concept { font-size: .72rem; padding: 8px; gap: 7px; } .toolbar { padding: 12px; } .editor-footer { padding: 10px 12px; } .editor-note { padding: 12px; } }
+    @media (prefers-reduced-motion: no-preference) { button { transition: background .15s, border-color .15s; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="site-header">
+      <a class="brand" href="index.html" data-label="home"><img src="assets/ulpgc-logo.svg" alt="ULPGC" width="42" height="43"><span class="brand-text"><strong>ULPGC</strong><small>Edu Tools · HPI</small></span></a>
+      <div class="header-actions"><a class="back" href="index.html" data-i18n="back"></a><button class="button" id="language-toggle" type="button" lang="en">EN · English</button></div>
+    </header>
+    <section class="hero">
+      <div><span class="eyebrow" data-i18n="eyebrow"></span><h1 data-i18n="title"></h1><p data-i18n="intro"></p></div>
+      <div class="hero-badge"><strong>11</strong><span data-i18n="conceptCount"></span></div>
+    </section>
+    <div class="workspace">
+      <section class="panel" data-label="editorLabel">
+        <div class="toolbar"><span class="file"><span class="file-icon" aria-hidden="true">PY</span>vocabulary.py</span><div class="editor-actions"><button class="button" id="copy-code" type="button" data-i18n="copy"></button><button class="button" id="reset-code" type="button" data-i18n="reset"></button></div></div>
+        <div class="editor-scroll" id="editor-scroll">
+          <div class="editor-surface" id="editor-surface">
+            <pre class="code" id="highlighted-code" aria-hidden="true"></pre>
+            <div class="line-numbers" id="line-numbers" aria-hidden="true"></div>
+            <textarea id="code-input" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-describedby="editor-help" data-label="editorLabel"></textarea>
+          </div>
+        </div>
+        <div class="editor-footer"><span><span class="status-dot" aria-hidden="true"></span><span data-i18n="editable"></span></span><span id="line-count" role="status"></span></div>
+        <p class="editor-note" id="editor-help" data-i18n="editorHelp"></p>
+      </section>
+      <aside class="panel inspector" aria-labelledby="inspector-heading">
+        <h2 id="inspector-heading" data-i18n="inspector"></h2><div class="detail-icon" id="detail-icon" aria-hidden="true"></div>
+        <div id="detail-content" aria-live="polite" aria-atomic="true"><h3 id="detail-title"></h3><p id="detail-definition"></p><div class="detail-example"><span data-i18n="example"></span><code id="detail-code"></code></div></div>
+        <p class="inspector-hint" data-i18n="inspectorHint"></p>
+      </aside>
+    </div>
+    <section class="panel glossary" aria-labelledby="glossary-title"><div class="section-heading"><h2 id="glossary-title" data-i18n="glossary"></h2><p data-i18n="glossaryHint"></p></div><div class="concepts" id="concepts"></div></section>
+    <footer class="site-footer"><strong>José Miguel Santana Núñez · ULPGC</strong><span data-i18n="footer"></span></footer>
+  </main>
+  <div class="tooltip" id="token-tooltip" role="tooltip" hidden><strong id="tooltip-title"></strong><p id="tooltip-definition"></p><small id="tooltip-related"></small></div>
+  <script>
+    'use strict';
+    const initialCode = `PASS_MARK = 5
+
+def has_passed(score):
+    return score >= PASS_MARK
+
+class Student:
+    def __init__(self, name):
+        self.name = name
+
+    def greet(self):
+        return "Hi, " + self.name
+
+scores = [4, 7, 9]
+student = Student("Alex")
+
+for score in scores:
+    if has_passed(score):
+        print(student.greet(), score)
+    else:
+        print("Try again", score)
+`;
+    const translations = {
+      es: {
+        pageTitle: 'Vocabulario de programación | Edu Tools · ULPGC', home: 'Volver a Edu Tools', back: '← Todas las herramientas', eyebrow: 'Fundamentos de programación · Explora y aprende', title: 'Vocabulario de programación', intro: 'Descubre las piezas de un programa sencillo en Python. Pasa el cursor sobre el código para conocer cada elemento y su definición, o edítalo para experimentar.', conceptCount: 'conceptos esenciales', copy: 'Copiar código', copied: '¡Copiado!', copyFailed: 'Selecciona el código y usa Ctrl/Cmd+C.', reset: 'Restaurar ejemplo', editorLabel: 'Editor de código Python', editable: 'Python · Editable', lines: 'líneas', editorHelp: 'Pasa el cursor para ver una definición. También puedes escribir, usar Tab para sangrar o mover el cursor con las flechas para explorar. El código no se ejecuta.', inspector: 'En detalle', example: 'Ejemplo en Python', inspectorHint: 'En móvil, toca un concepto de la lista. Se resaltarán sus apariciones en el editor.', glossary: 'Las piezas del programa', glossaryHint: 'Selecciona un concepto para encontrarlo en el código.', footer: 'Habilidades Profesionales para Ingenieros', related: 'También aparece como',
+      },
+      en: {
+        pageTitle: 'Programming vocabulary | Edu Tools · ULPGC', home: 'Back to Edu Tools', back: '← All tools', eyebrow: 'Programming fundamentals · Explore and learn', title: 'Programming vocabulary', intro: 'Discover the building blocks of a simple Python program. Hover over the code to learn each element’s name and definition, or edit it to experiment.', conceptCount: 'essential concepts', copy: 'Copy code', copied: 'Copied!', copyFailed: 'Select the code and use Ctrl/Cmd+C.', reset: 'Restore example', editorLabel: 'Python code editor', editable: 'Python · Editable', lines: 'lines', editorHelp: 'Hover for a definition. You can also type, use Tab to indent, or move the caret with the arrow keys to explore. The code is not executed.', inspector: 'A closer look', example: 'Python example', inspectorHint: 'On mobile, tap a concept below to highlight its occurrences in the editor.', glossary: 'The building blocks', glossaryHint: 'Select a concept to find it in the code.', footer: 'Professional Skills for Engineers', related: 'Also appears as',
+      }
+    };
+    // Definitions are local; the editor needs no libraries or network connection.
+    const concepts = {
+      variable: { icon: 'x', example: 'scores = [4, 7, 9]', es: ['Variable', 'Nombre que hace referencia a un valor y que puede asociarse a otro valor durante el programa.'], en: ['Variable', 'A name that refers to a value and can be assigned a different value during the program.'] },
+      constant: { icon: 'A', example: 'PASS_MARK = 5', es: ['Constante', 'Valor con nombre que se pretende mantener sin cambios durante la ejecución. En Python se indica por convención con MAYÚSCULAS; no es inmutable por el nombre.'], en: ['Constant', 'A named value intended to stay unchanged during execution. Python uses UPPERCASE by convention; the name does not prevent reassignment.'] },
+      function: { icon: 'f()', example: 'def has_passed(score):', es: ['Función / método', 'Bloque reutilizable de código que realiza una tarea. Un método es una función definida en una clase, como greet.'], en: ['Function / method', 'A reusable block of code that performs a task. A method is a function defined in a class, such as greet.'] },
+      parameter: { icon: '(x)', example: 'def has_passed(score):', es: ['Parámetro', 'Nombre definido en la declaración de una función que recibe un valor cuando se llama. score es un parámetro de has_passed.'], en: ['Parameter', 'A name in a function declaration that receives a value when the function is called. score is a parameter of has_passed.'] },
+      argument: { icon: '(7)', example: 'Student("Alex")', es: ['Argumento', 'Valor o expresión que se pasa a una función al llamarla. "Alex" es el argumento de Student; el score de has_passed(score) también es un argumento.'], en: ['Argument', 'A value or expression passed to a function when it is called. "Alex" is an argument to Student; score in has_passed(score) is also an argument.'] },
+      returnValue: { icon: '↩', example: 'return score >= PASS_MARK', es: ['Valor de retorno', 'Resultado que una función envía a quien la llama. La expresión después de return calcula ese valor; aquí puede ser True o False.'], en: ['Return value', 'The result a function sends back to its caller. The expression after return calculates that value; here it can be True or False.'] },
+      conditional: { icon: 'if', example: 'if has_passed(score):', es: ['Sentencia condicional', 'Ejecuta un bloque si una condición es verdadera. if comprueba la condición y else indica la alternativa cuando es falsa.'], en: ['Conditional statement', 'Runs a block when a condition is true. if checks the condition; else provides the alternative when it is false.'] },
+      loop: { icon: 'for', example: 'for score in scores:', es: ['Bucle', 'Repite un bloque de instrucciones. for recorre los elementos de una colección; while repite mientras una condición sea verdadera.'], en: ['Loop', 'Repeats a block of instructions. for visits elements in a collection; while repeats as long as a condition is true.'] },
+      list: { icon: '[]', example: 'scores = [4, 7, 9]', es: ['Lista / array', 'Colección ordenada de elementos. En este ejemplo se usa una lista de Python, que puede modificarse y contener valores de distintos tipos.'], en: ['List / array', 'An ordered collection of elements. This example uses a Python list, which can be changed and hold values of different types.'] },
+      object: { icon: '{}', example: 'student = Student("Alex")', es: ['Objeto', 'Entidad que reúne datos y comportamiento. student es una instancia de Student: tiene un atributo name y un método greet.'], en: ['Object', 'An entity that combines data and behavior. student is an instance of Student: it has a name attribute and a greet method.'] },
+      class: { icon: 'C', example: 'class Student:', es: ['Clase', 'Modelo que define los datos y el comportamiento de sus objetos. Student describe cómo crear estudiantes y qué pueden hacer.'], en: ['Class', 'A blueprint defining the data and behavior of its objects. Student describes how to create students and what they can do.'] },
+      string: { icon: '""', example: '"Hi, "', es: ['Cadena de texto', 'Secuencia de caracteres escrita entre comillas. Puede usarse como valor, argumento o parte de una expresión.'], en: ['String', 'A sequence of characters enclosed in quotes. It can be used as a value, argument, or part of an expression.'] },
+      number: { icon: '7', example: '5', es: ['Literal numérico', 'Número escrito directamente en el código, como 5, 4 o 7.'], en: ['Numeric literal', 'A number written directly in the code, such as 5, 4, or 7.'] },
+      operator: { icon: '>=', example: 'score >= PASS_MARK', es: ['Operador', 'Símbolo que realiza una operación. >= compara, + suma o concatena y = asigna un valor a un nombre.'], en: ['Operator', 'A symbol that performs an operation. >= compares, + adds or concatenates, and = assigns a value to a name.'] },
+      punctuation: { icon: ':', example: 'has_passed(score):', es: ['Delimitador', 'Símbolo que organiza el código. Los paréntesis agrupan parámetros o argumentos, la coma separa elementos y los dos puntos abren un bloque indentado.'], en: ['Delimiter', 'A symbol that structures code. Parentheses group parameters or arguments, commas separate elements, and a colon starts an indented block.'] },
+      keyword: { icon: 'in', example: 'for score in scores:', es: ['Palabra reservada', 'Palabra con un significado especial en Python. Por ejemplo, in indica la colección que recorre un bucle for.'], en: ['Keyword', 'A word with a special meaning in Python. For example, in identifies the collection visited by a for loop.'] },
+      comment: { icon: '#', example: '# A comment', es: ['Comentario', 'Nota que empieza con # y explica el código. Python no la ejecuta.'], en: ['Comment', 'A note beginning with # that explains the code. Python does not execute it.'] }
+    };
+    const mainConcepts = Object.keys(concepts).slice(0, 11);
+    const input = document.getElementById('code-input');
+    const mirror = document.getElementById('highlighted-code');
+    const tooltip = document.getElementById('token-tooltip');
+    const scroll = document.getElementById('editor-scroll');
+    let language = 'es', selected = 'variable', tokens = [], hovered = null, hideTimer, copyTimer;
+    const t = key => translations[language][key];
+    const definition = key => concepts[key][language];
+
+    // A deliberately small lexer for this teaching example, not a Python compiler.
+    // Whitespace, strings and comments are kept intact; user text never becomes HTML.
+    function tokenize(source) {
+      const pattern = /#[^\n]*|"""[\s\S]*?(?:"""|$)|'''[\s\S]*?(?:'''|$)|"(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b|(?:==|!=|>=|<=|\*\*|\/\/|:=|[-+*/%=<>])|[^\S\n]+|\n|./g;
+      const items = Array.from(source.matchAll(pattern), match => ({ text: match[0], start: match.index, end: match.index + match[0].length, concepts: [], style: '' }));
+      const significant = items.filter(token => !/^\s+$/.test(token.text) && !token.text.startsWith('#'));
+      const classes = new Set(), functions = new Set(['print', 'len', 'range', 'str', 'int']), objects = new Set();
+      const positions = new Map(significant.map((token, i) => [token, i]));
+      significant.forEach((token, i) => {
+        if (significant[i - 1]?.text === 'class') classes.add(token.text);
+        if (significant[i - 1]?.text === 'def') functions.add(token.text);
+      });
+      significant.forEach((token, i) => {
+        if (significant[i + 1]?.text === '=' && classes.has(significant[i + 2]?.text)) objects.add(token.text);
+      });
+      let declaration = false, returnLine = false;
+      const stack = [];
+      items.forEach(token => {
+        const text = token.text;
+        if (text === '\n') { returnLine = false; return; }
+        if (/^\s+$/.test(text)) return;
+        const i = positions.get(token), previous = significant[i - 1], next = significant[i + 1];
+        let kind = 'punctuation';
+        if (text.startsWith('#')) kind = 'comment';
+        else if (/^["']/.test(text)) kind = 'string';
+        else if (/^\d/.test(text)) kind = 'number';
+        else if (['if', 'elif', 'else', 'match', 'case'].includes(text)) kind = 'conditional';
+        else if (['for', 'while', 'break', 'continue'].includes(text)) kind = 'loop';
+        else if (text === 'return') kind = 'returnValue';
+        else if (['class', 'def', 'in', 'True', 'False', 'None', 'and', 'or', 'not', 'import', 'from', 'as', 'pass', 'try', 'except', 'finally', 'with', 'raise', 'lambda', 'yield', 'is'].includes(text)) kind = text === 'class' ? 'class' : text === 'def' ? 'function' : 'keyword';
+        else if (/^[A-Za-z_]\w*$/.test(text)) {
+          if (classes.has(text)) kind = 'class';
+          else if (functions.has(text) || next?.text === '(') kind = 'function';
+          else if (/^[A-Z][A-Z_\d]*$/.test(text)) kind = 'constant';
+          else if (text === 'self' || objects.has(text)) kind = 'object';
+          else if (stack.at(-1)?.type === 'parameters') kind = 'parameter';
+          else kind = 'variable';
+        } else if ('[]'.includes(text)) kind = 'list';
+        else if (/^[-+*/%=<>!:]+$/.test(text) && text !== ':') kind = 'operator';
+        token.style = kind;
+        token.concepts.push(kind);
+        if (kind === 'object' && text !== 'self') token.concepts.push('variable');
+        if (stack.some(context => context.type === 'arguments') && ['variable', 'string', 'number', 'constant', 'object', 'list'].includes(kind)) token.concepts.unshift('argument');
+        if (returnLine && kind !== 'comment') token.concepts.push('returnValue');
+        if (stack.some(context => context.type === 'list') && ['number', 'string', 'variable'].includes(kind)) token.concepts.push('list');
+        if (text === 'def') declaration = true;
+        if (text === '(') { stack.push({ type: declaration ? 'parameters' : previous && /^[A-Za-z_]\w*$/.test(previous.text) ? 'arguments' : 'group' }); declaration = false; }
+        if (text === '[') stack.push({ type: 'list' });
+        if (text === ')' || text === ']') stack.pop();
+        if (text === 'return') returnLine = true;
+        token.concepts = [...new Set(token.concepts)];
+      });
+      return items;
+    }
+
+    function renderCode() {
+      hideTooltip();
+      tokens = tokenize(input.value);
+      const fragment = document.createDocumentFragment();
+      tokens.forEach(token => {
+        if (!token.concepts.length) { fragment.append(document.createTextNode(token.text)); return; }
+        const span = document.createElement('span');
+        span.className = `token ${token.style}`;
+        span.textContent = token.text;
+        token.element = span;
+        fragment.append(span);
+      });
+      // An extra line keeps the mirror and textarea aligned at a trailing newline.
+      fragment.append(document.createTextNode('\n'));
+      mirror.replaceChildren(fragment);
+      const count = input.value.split('\n').length;
+      document.getElementById('line-numbers').replaceChildren(...Array.from({ length: count }, (_, i) => { const span = document.createElement('span'); span.textContent = i + 1; return span; }));
+      document.getElementById('line-count').textContent = `${count} ${t('lines')}`;
+      highlightConcept();
+    }
+    function highlightConcept() {
+      tokens.forEach(token => token.element?.classList.toggle('is-active', token.concepts.includes(selected)));
+      document.querySelectorAll('.concept').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.concept === selected)));
+    }
+    function selectConcept(key, example) {
+      selected = key;
+      const [name, text] = definition(key);
+      document.getElementById('detail-title').textContent = name;
+      document.getElementById('detail-definition').textContent = text;
+      document.getElementById('detail-icon').textContent = concepts[key].icon;
+      document.getElementById('detail-code').textContent = example || concepts[key].example;
+      highlightConcept();
+    }
+    function hideTooltip() {
+      clearTimeout(hideTimer);
+      tooltip.hidden = true;
+      hovered = null;
+      input.removeAttribute('aria-describedby');
+      input.setAttribute('aria-describedby', 'editor-help');
+    }
+    function showTooltip(token, x, y) {
+      clearTimeout(hideTimer);
+      if (hovered !== token) {
+        hovered = token;
+        const [name, text] = definition(token.concepts[0]);
+        document.getElementById('tooltip-title').textContent = name;
+        document.getElementById('tooltip-definition').textContent = text;
+        const related = token.concepts.slice(1).map(key => definition(key)[0]);
+        document.getElementById('tooltip-related').textContent = related.length ? `${t('related')}: ${related.join(' · ')}` : '';
+        selectConcept(token.concepts[0], token.text);
+      }
+      tooltip.hidden = false;
+      const bounds = tooltip.getBoundingClientRect();
+      tooltip.style.left = `${Math.max(12, Math.min(x, window.innerWidth - bounds.width - 12))}px`;
+      tooltip.style.top = `${Math.max(12, y + 16 + bounds.height > window.innerHeight - 12 ? y - bounds.height - 12 : y + 16)}px`;
+      input.setAttribute('aria-describedby', 'editor-help token-tooltip');
+    }
+    function updateLanguage() {
+      document.documentElement.lang = language;
+      document.title = t('pageTitle');
+      document.querySelectorAll('[data-i18n]').forEach(element => element.textContent = t(element.dataset.i18n));
+      document.querySelectorAll('[data-label]').forEach(element => element.setAttribute('aria-label', t(element.dataset.label)));
+      const toggle = document.getElementById('language-toggle');
+      toggle.textContent = language === 'es' ? 'EN · English' : 'ES · Español';
+      toggle.lang = language === 'es' ? 'en' : 'es';
+      toggle.setAttribute('aria-label', language === 'es' ? 'Switch to English' : 'Cambiar a español');
+      document.getElementById('concepts').replaceChildren(...mainConcepts.map(key => {
+        const button = document.createElement('button');
+        button.type = 'button'; button.className = 'concept'; button.dataset.concept = key;
+        const icon = document.createElement('code'); icon.textContent = concepts[key].icon; icon.setAttribute('aria-hidden', 'true');
+        const name = document.createElement('span'); name.textContent = definition(key)[0];
+        button.append(icon, name);
+        button.addEventListener('click', () => { hideTooltip(); selectConcept(key); });
+        return button;
+      }));
+      selectConcept(selected);
+      document.getElementById('line-count').textContent = `${input.value.split('\n').length} ${t('lines')}`;
+      hideTooltip();
+    }
+    function inspectCaret() {
+      const offset = input.selectionStart;
+      const token = tokens.find(item => item.concepts.length && item.start <= offset && item.end > offset);
+      if (token) selectConcept(token.concepts[0], token.text);
+    }
+    input.addEventListener('input', () => { renderCode(); inspectCaret(); });
+    input.addEventListener('click', inspectCaret);
+    input.addEventListener('keyup', event => { if (event.key.startsWith('Arrow') || event.key === 'Home' || event.key === 'End') inspectCaret(); });
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { hideTooltip(); return; }
+      if (event.key !== 'Tab' || event.shiftKey || event.ctrlKey || event.metaKey || event.altKey) return;
+      event.preventDefault();
+      const start = input.selectionStart, end = input.selectionEnd;
+      input.setRangeText('    ', start, end, 'end');
+      renderCode();
+    });
+    // The textarea remains fully editable; hit-test the highlighted mirror below it.
+    input.addEventListener('pointermove', event => {
+      clearTimeout(hideTimer);
+      if (event.pointerType === 'touch' || event.buttons) { hideTooltip(); return; }
+      const token = tokens.find(item => item.element && Array.from(item.element.getClientRects()).some(rect => event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom));
+      if (token) showTooltip(token, event.clientX, event.clientY);
+      else hideTimer = setTimeout(hideTooltip, 180);
+    });
+    input.addEventListener('pointerleave', () => { hideTimer = setTimeout(hideTooltip, 180); });
+    input.addEventListener('blur', () => { if (!tooltip.matches(':hover')) hideTooltip(); });
+    tooltip.addEventListener('pointerenter', () => clearTimeout(hideTimer));
+    tooltip.addEventListener('pointerleave', hideTooltip);
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') hideTooltip(); });
+    scroll.addEventListener('scroll', hideTooltip);
+    window.addEventListener('resize', hideTooltip);
+    document.getElementById('language-toggle').addEventListener('click', () => { clearTimeout(copyTimer); language = language === 'es' ? 'en' : 'es'; updateLanguage(); });
+    document.getElementById('reset-code').addEventListener('click', () => { input.value = initialCode; scroll.scrollTo(0, 0); selectConcept('variable'); renderCode(); });
+    document.getElementById('copy-code').addEventListener('click', async () => {
+      const button = document.getElementById('copy-code');
+      try {
+        await navigator.clipboard.writeText(input.value);
+        button.textContent = t('copied');
+      } catch {
+        input.focus(); input.select(); button.textContent = t('copyFailed');
+      }
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(() => button.textContent = t('copy'), 2400);
+    });
+    input.value = initialCode;
+    renderCode();
+    updateLanguage();
+  </script>
+</body>
+</html>
