@@ -20,6 +20,7 @@ El repositorio incluye actualmente:
 - `probability_distribution_function.html`: simulacion interactiva de distribuciones de probabilidad y ley de los grandes numeros.
 - `hpi-theory-hub.html`: hub de teoria, videos, vocabulario y recursos organizados por secciones.
 - `programming-vocabulary.html`: editor Python con resaltado de sintaxis, definiciones al pasar el cursor, exploracion de once conceptos de programacion y selector espanol/ingles. Incluye copia y restauracion del ejemplo; no ejecuta el codigo.
+- `computational-complexity.html`: interactive Python matrix multiplication example with exact operation counts, time and space growth charts, and an explanation of Big O.
 - `charts_showcase.html`: galeria o muestra de visualizaciones y graficos.
 - `ui_elements_catalog.html`: catalogo de elementos de interfaz reutilizables.
 - `temp_script.js`: script auxiliar utilizado durante el desarrollo.

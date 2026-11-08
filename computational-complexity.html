@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore time complexity, space complexity, and Big O with a Python example of square matrix multiplication.">
+  <title>A Study in Computational Complexity | ULPGC</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+      --background: #f4f7fb;
+      --surface: #fff;
+      --soft: #f5f9fd;
+      --line: #dfe7f1;
+      --text: #14243e;
+      --muted: #536880;
+      --time: #1475bb;
+      --space: #087e7a;
+      --reference: #a25312;
+      --shadow: 0 12px 38px rgba(24, 49, 83, .055);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0 24px 56px;
+      background: radial-gradient(circle at 10% 0%, #e8f2fd 0, transparent 32%), var(--background);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    main, .site-header, .site-footer { width: min(1200px, 100%); margin-inline: auto; }
+    a { color: var(--time); }
+    input, select { font: inherit; }
+    :focus-visible { outline: 3px solid #63b3e2; outline-offset: 3px; }
+    h1, h2, h3, p, dl, figure { margin: 0; }
+    h1, h2, h3 { line-height: 1.2; }
+    h1 { color: #173354; margin-block: 7px 10px; font-size: clamp(2rem, 4.3vw, 3.2rem); letter-spacing: -.045em; line-height: 1.12; }
+    h2 { color: #173354; font-size: clamp(1.4rem, 2.5vw, 1.95rem); letter-spacing: -.035em; }
+    h3 { color: #244665; font-size: 1rem; }
+    p, dd, figcaption { color: var(--muted); }
+    code, .formula, .metric-value { font-family: Consolas, "Courier New", monospace; }
+
+    .site-header { min-height: 88px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid #dce6f0; }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .brand img { width: 42px; height: 43px; object-fit: contain; }
+    .brand-text { display: grid; line-height: 1.15; }
+    .brand-text strong { color: #173f7b; font-size: 1.15rem; letter-spacing: -.035em; }
+    .brand-text small { margin-top: 4px; color: var(--muted); font-size: .69rem; letter-spacing: .035em; }
+    .top-nav { display: flex; gap: clamp(12px, 3vw, 38px); }
+    .top-nav a { color: #51627c; text-decoration: none; font-size: .86rem; font-weight: 650; }
+    .top-nav a:hover { color: var(--time); }
+    .eyebrow { color: #16749f; font-size: .7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .intro { max-width: 64ch; }
+    .hero, .section { margin-top: 26px; padding: clamp(20px, 3vw, 36px); border: 1px solid #e1e8f1; border-radius: 22px; background: var(--surface); box-shadow: var(--shadow); }
+    .hero { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(230px, .85fr); gap: 24px; align-items: center; }
+    .hero-note { padding: 16px 18px; border: 1px solid #d6e6f3; border-radius: 16px; background: linear-gradient(135deg, #f3f9fe, #fbfdff); }
+    .hero-note p { margin-top: 6px; font-size: .88rem; }
+    .section > h2 { margin-bottom: 12px; }
+    .panel { min-width: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--soft); }
+    .algorithm { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 18px 32px; padding: 18px; }
+    .matrix-equation { display: flex; align-items: flex-end; justify-content: center; gap: clamp(5px, 1.3vw, 15px); }
+    .matrix-equation figcaption { text-align: center; margin-bottom: 5px; font-weight: 650; }
+    .matrix-equation table { width: auto; border-collapse: separate; border-spacing: 3px; border-inline: 2px solid var(--line); border-radius: 5px; }
+    .matrix-equation td { width: clamp(22px, 5vw, 40px); height: clamp(24px, 5vw, 40px); padding: 0; border: 0; border-radius: 3px; background: var(--background); text-align: center; vertical-align: middle; font-variant-numeric: tabular-nums; }
+    .matrix-operator { margin-bottom: clamp(13px, 2.5vw, 28px); color: var(--muted); font-weight: 650; }
+    .matrix-row { --highlight: var(--time); }
+    .matrix-column { --highlight: var(--space); }
+    .matrix-result { --highlight: var(--reference); }
+    .matrix-equation td[class] { background: color-mix(in srgb, var(--highlight) 16%, var(--background)); }
+    .matrix-equation td[class], .dot-product span { color: var(--highlight); font-weight: 700; }
+    .dot-product { margin-block: 6px; color: var(--text); font-size: clamp(.96rem, 2.2vw, 1.22rem); }
+
+    .example { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 16px; }
+    .code-panel { background: #fbfdff; }
+    .code-label { padding: 9px 16px; border-bottom: 1px solid var(--line); color: #3b5069; font-size: .82rem; font-weight: 650; }
+    pre { overflow: auto; margin: 0; padding: 15px 16px; color: #27435e; font-size: .87rem; line-height: 1.5; }
+    .keyword { color: #8548ab; }
+    .function { color: #126da1; }
+    .number { color: var(--reference); }
+    .notes { padding: 18px; }
+    .notes p { margin-top: 8px; }
+    .notes dl { margin-top: 12px; }
+    .notes dt { margin-top: 8px; font-weight: 650; }
+    dd { margin-inline-start: 0; }
+
+    .settings { display: flex; align-items: end; flex-wrap: wrap; gap: 12px 20px; margin-bottom: 16px; }
+    .field { display: grid; gap: 5px; }
+    .field label { color: #3b5069; font-size: .8rem; font-weight: 750; }
+    .field input, .field select { width: max-content; min-width: 96px; max-width: 100%; padding: 7px 10px; border: 1px solid #b8cbdc; border-radius: 9px; background: #fff; color: #193d63; font-weight: 650; }
+    .field input { width: 106px; }
+    .field small { color: var(--muted); font-size: .75rem; }
+    .control { padding: 14px 16px 10px; }
+    .control label { color: #3b5069; font-weight: 650; }
+    .control-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; }
+    #matrix-dimensions { color: var(--time); font-weight: 650; font-variant-numeric: tabular-nums; }
+    .control p { margin-top: 4px; font-size: .9rem; }
+    input[type="range"] { display: block; width: 100%; margin: 8px 0 0; height: 26px; accent-color: var(--time); }
+    .range-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: .78rem; }
+    .analysis-grid { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+    .count-panel, .growth-panel { padding: 16px 18px; }
+    .count-panel { background: #fff; }
+    .growth-panel { background: linear-gradient(135deg, #f3f9fe, #fbfdff 65%); }
+    .time { --series: var(--time); }
+    .space { --series: var(--space); }
+    .metric-value { display: block; margin-block: 5px 2px; color: var(--series); font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 700; line-height: 1.15; }
+    .section-intro { max-width: 76ch; margin-bottom: 12px; }
+    .count-panel p, figcaption { font-size: .88rem; }
+    details { margin-top: 12px; }
+    summary { cursor: pointer; font-weight: 650; }
+    details p { margin-top: 10px; }
+    .table-scroll { margin-block: 10px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: .88rem; }
+    th, td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .numeric { text-align: right; padding-right: 0; font-variant-numeric: tabular-nums; }
+    td.numeric { white-space: nowrap; }
+    tfoot { font-weight: 700; }
+    .formula { color: var(--text); font-weight: 650; }
+
+    .chart h3 { color: var(--text); }
+    .chart svg { display: block; width: 100%; height: 228px; margin-top: 6px; }
+    .chart svg text { fill: var(--muted); font-size: 12px; }
+    .chart .grid-line { stroke: var(--line); }
+    .chart .selection { stroke: var(--series); stroke-dasharray: 4 4; opacity: .65; }
+    .chart .bound-region { fill: #fff0da; }
+    .chart .threshold { stroke: var(--reference); stroke-dasharray: 3 3; }
+    .chart .curve { fill: none; stroke: var(--series); stroke-width: 2.5; stroke-linejoin: round; }
+    .chart .reference-curve { stroke: var(--reference); stroke-width: 1.8; stroke-dasharray: 5 4; }
+    .chart .point { fill: var(--series); stroke: var(--surface); stroke-width: 2; }
+    .chart-key { display: grid; gap: 4px; margin: 6px 0 0; padding: 0; list-style: none; font-size: .86rem; }
+    .chart-key li { display: flex; gap: 8px; align-items: baseline; color: var(--muted); }
+    .chart-key li::before { content: ""; width: 18px; flex: 0 0 auto; border-top: 2px solid var(--series); align-self: center; }
+    .chart-key .reference-key::before { border-top: 2px dashed var(--reference); }
+    .chart-key strong { margin-inline-start: auto; color: var(--text); font-variant-numeric: tabular-nums; }
+    .bound-settings { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: end; margin-block: 10px 3px; }
+    .bound-settings .field input { width: 92px; }
+    .bound-settings .field input:invalid { border-color: var(--reference); }
+    .bound-status { margin-block: 8px 0; padding: 8px 10px; border-left: 3px solid #d89a55; border-radius: 4px 8px 8px 4px; background: #fff6e8; color: #71431d; font-size: .83rem; }
+    .bound-status:empty { display: none; }
+    .big-o { margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .big-o p { margin-top: 6px; }
+    .big-o h3 { color: var(--series); }
+
+    .site-footer { margin-top: 26px; padding: 24px 6px 0; border-top: 1px solid #dce6ef; }
+    .footer-person { display: flex; gap: 12px; align-items: center; }
+    .footer-mark { padding: 10px; border-radius: 9px; background: #e2eff8; color: #26658e; font-size: .75rem; font-weight: 800; }
+    .footer-person div { display: grid; gap: 2px; }
+    .footer-person strong { color: #284762; font-size: .84rem; }
+    .footer-person div span { color: var(--muted); font-size: .75rem; }
+
+    @media (max-width: 900px) {
+      .algorithm, .analysis-grid { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 760px) {
+      body { padding: 0 14px 36px; }
+      .site-header { min-height: 72px; }
+      .top-nav { display: none; }
+      .hero, .example { grid-template-columns: minmax(0, 1fr); }
+      .hero, .section { margin-top: 17px; padding: 18px 14px; }
+      .count-panel, .growth-panel { padding-inline: 12px; }
+      .algorithm { padding: 14px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Back to Edu Tools">
+      <img src="assets/ulpgc-logo.svg" alt="ULPGC logo" width="42" height="43">
+      <span class="brand-text"><strong>ULPGC</strong><small>Computational Complexity</small></span>
+    </a>
+    <nav class="top-nav" aria-label="Main navigation">
+      <a href="#algorithm-title">Algorithm</a>
+      <a href="#implementation-title">Python</a>
+      <a href="#time-title">Time</a>
+      <a href="#space-title">Space</a>
+    </nav>
+  </header>
+  <main>
+    <div class="hero">
+      <div>
+        <p class="eyebrow">Algorithms &middot; Interactive Python example</p>
+        <h1>A Study in Computational Complexity</h1>
+        <p class="intro">Computational complexity describes how the work and memory an algorithm needs grow as its input gets larger. Explore both using square matrix multiplication.</p>
+      </div>
+      <aside class="hero-note">
+        <h3>What makes a Big O bound?</h3>
+        <p>Choose a multiplier <code>C</code> and look for the first size <code>n₀</code> where the dashed curve is at least as high as the exact cost and stays there.</p>
+      </aside>
+    </div>
+
+    <section class="section" aria-labelledby="algorithm-title">
+      <h2 id="algorithm-title">Algorithm</h2>
+      <div class="panel algorithm">
+        <div class="matrix-equation" role="group" aria-label="Matrix A times matrix B equals the result">
+          <figure>
+            <figcaption>Matrix A</figcaption>
+            <table aria-label="Matrix A with row 1 highlighted">
+              <tbody>
+                <tr><td class="matrix-row">1</td><td class="matrix-row">2</td></tr>
+                <tr><td>3</td><td>4</td></tr>
+              </tbody>
+            </table>
+          </figure>
+          <span class="matrix-operator" aria-hidden="true">×</span>
+          <figure>
+            <figcaption>Matrix B</figcaption>
+            <table aria-label="Matrix B with column 1 highlighted">
+              <tbody>
+                <tr><td class="matrix-column">5</td><td>6</td></tr>
+                <tr><td class="matrix-column">7</td><td>8</td></tr>
+              </tbody>
+            </table>
+          </figure>
+          <span class="matrix-operator" aria-hidden="true">=</span>
+          <figure>
+            <figcaption>Result</figcaption>
+            <table aria-label="Result with the top-left cell highlighted">
+              <tbody>
+                <tr><td class="matrix-result">19</td><td>22</td></tr>
+                <tr><td>43</td><td>50</td></tr>
+              </tbody>
+            </table>
+          </figure>
+        </div>
+        <div>
+          <h3>Row 1 × column 1</h3>
+          <p class="dot-product"><code><span class="matrix-row">1</span> × <span class="matrix-column">5</span> + <span class="matrix-row">2</span> × <span class="matrix-column">7</span> = <span class="matrix-result">19</span></code></p>
+          <p>Multiply the matching entries from row 1 of A and column 1 of B, then add the products. Put the sum in row 1, column 1 of the result. Repeat for each row and column pair.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="implementation-title">
+      <h2 id="implementation-title">Implementation in Python</h2>
+      <div class="example">
+        <div class="panel code-panel">
+          <div class="code-label">matrix_multiplication.py</div>
+          <pre tabindex="0" aria-label="Python source code"><code id="python-code"><span class="keyword">def</span> <span class="function">multiply_square_matrices</span>(a, b):
+    n = len(a)
+    result = [[<span class="number">0</span>] * n <span class="keyword">for</span> _ <span class="keyword">in</span> range(n)]
+    column = [<span class="number">0</span>] * n
+
+    <span class="keyword">for</span> j <span class="keyword">in</span> range(n):
+        <span class="keyword">for</span> k <span class="keyword">in</span> range(n):
+            column[k] = b[k][j]
+
+        <span class="keyword">for</span> i <span class="keyword">in</span> range(n):
+            total = <span class="number">0</span>
+            <span class="keyword">for</span> k <span class="keyword">in</span> range(n):
+                total += a[i][k] * column[k]
+            result[i][j] = total
+
+    <span class="keyword">return</span> result</code></pre>
+        </div>
+        <div class="panel notes">
+          <h3>How it works</h3>
+          <p>A square matrix has the same number of rows and columns. Both inputs, <code>a</code> and <code>b</code>, are square and have the same dimensions.</p>
+          <dl>
+            <dt><code>n</code> &middot; Input-size parameter</dt>
+            <dd>The number of rows or columns in either input. Each input contains <code>n²</code> entries.</dd>
+            <dt><code>column</code> &middot; Reusable buffer</dt>
+            <dd>A temporary list that holds one column of <code>b</code>. All rows of <code>a</code> use that copy before it is overwritten with the next column.</dd>
+            <dt><code>i</code> and <code>j</code> &middot; Output position</dt>
+            <dd>They select a row of <code>a</code> and a column of <code>b</code> for one result cell.</dd>
+            <dt><code>k</code> and <code>total</code> &middot; Inner loop</dt>
+            <dd><code>k</code> visits each pair of entries. <code>total</code> adds up their products to compute the dot product for one result cell.</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="explore-title">
+      <h2 id="explore-title">Explore a matrix size</h2>
+      <div class="settings">
+        <div class="field">
+          <label for="chart-range">Maximum <code>n</code> on both charts</label>
+          <select id="chart-range">
+            <option value="32">32</option>
+            <option value="128">128</option>
+            <option value="512">512</option>
+            <option value="2048">2,048</option>
+            <option value="8192">8,192</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="matrix-size-input">Enter a matrix size</label>
+          <input id="matrix-size-input" type="number" min="1" max="32" step="1" value="8" required>
+        </div>
+      </div>
+      <div class="panel control">
+        <div class="control-heading">
+          <label for="matrix-size">Matrix size <code>n</code></label>
+          <span id="matrix-dimensions">8 × 8</span>
+        </div>
+        <p id="size-help">Choose the number of rows and columns in each input matrix. Both tables and charts update together.</p>
+        <input id="matrix-size" type="range" min="1" max="32" step="1" value="8" aria-describedby="size-help">
+        <div class="range-labels" aria-hidden="true"><span>1</span><span id="range-end">32</span></div>
+      </div>
+    </section>
+
+    <section class="section time" aria-labelledby="time-title">
+      <h2 id="time-title">1. Time complexity</h2>
+      <p class="section-intro">Time complexity describes how the amount of work grows with <code>n</code>. This model counts source-level operations and assigns one step to each counted operation.</p>
+      <div class="analysis-grid">
+        <div class="panel count-panel">
+          <h3>Exact step count</h3>
+          <output class="metric-value" id="step-count" for="matrix-size">4,371 steps</output>
+          <div class="table-scroll">
+            <table aria-label="Step count breakdown">
+              <thead><tr><th scope="col">Operation</th><th scope="col">Steps</th><th scope="col" class="numeric">At this size</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Read length, assign <code>n</code>, and return</th><td><code>3</code></td><td class="numeric" id="setup-count"></td></tr>
+                <tr><th scope="row">Allocate the result and buffer</th><td><code>n² + 4n + 6</code></td><td class="numeric" id="allocation-count"></td></tr>
+                <tr><th scope="row">Set up and advance the four <code>for</code> loops</th><td><code>(1 + 2n + n²)(n + 2)</code></td><td class="numeric" id="loop-count"></td></tr>
+                <tr><th scope="row">Read list entries</th><td><code>3n³ + 3n²</code></td><td class="numeric" id="read-count"></td></tr>
+                <tr><th scope="row">Multiply and add numbers</th><td><code>2n³</code></td><td class="numeric" id="arithmetic-count"></td></tr>
+                <tr><th scope="row">Reset and update <code>total</code></th><td><code>n² + n³</code></td><td class="numeric" id="accumulator-count"></td></tr>
+                <tr><th scope="row">Write buffer and result entries</th><td><code>2n²</code></td><td class="numeric" id="write-count"></td></tr>
+              </tbody>
+              <tfoot><tr><th scope="row">Total</th><td class="formula">7n³ + 11n² + 9n + 11</td><td class="numeric" id="total-count"></td></tr></tfoot>
+            </table>
+          </div>
+          <details>
+            <summary>How the steps are counted</summary>
+            <p><strong>Loop control.</strong> Count one iterator setup and <code>n + 1</code> advances, including the final attempt that ends the loop. A successful advance includes binding the loop variable. The column loop starts once, the copy and row loops start <code>n</code> times each, and the dot-product loop starts <code>n²</code> times.</p>
+            <p><strong>Allocation.</strong> The result costs <code>n² + 3n + 4</code> steps. Count one to create the outer list, <code>n + 2</code> for the comprehension's loop, <code>n + 2</code> per row to build it, fill it with zeros, and append it, and one to assign <code>result</code>. The buffer costs <code>n + 2</code> steps to build, fill, and assign.</p>
+            <p><strong>Indexing.</strong> Copying an entry from <code>b</code> reads its row and cell. Each multiply-add reads two entries through <code>a[i][k]</code> and one through <code>column[k]</code>. Storing a result reads its row once. Each buffer or result write costs one step.</p>
+          </details>
+        </div>
+        <div class="panel growth-panel">
+          <figure class="chart">
+            <figcaption><h3>Time growth</h3>Modeled steps by matrix size</figcaption>
+            <div class="bound-settings">
+              <div class="field">
+                <label for="time-multiplier">Time bound multiplier <code>C</code></label>
+                <input id="time-multiplier" type="number" min="0.01" max="50" step="0.01" value="8" required>
+              </div>
+            </div>
+            <svg id="time-chart" role="img" aria-label="Exact step count and Big O reference by matrix size"></svg>
+            <ul class="chart-key" aria-label="Curve values at the selected size">
+              <li>Exact formula <strong data-exact-value>4,371</strong></li>
+              <li class="reference-key"><span>Big O comparison <code data-bound-formula>8 × n³</code></span><strong data-reference-value>4,096</strong></li>
+            </ul>
+            <p class="bound-status" id="time-bound-status" aria-live="polite"></p>
+          </figure>
+          <div class="big-o">
+            <h3>Big O &middot; <code>O(n³)</code> time</h3>
+            <p>Big O asks whether some constant <code>C</code> gives <code>T(n) ≤ C × n³</code> for every <code>n ≥ n₀</code>. The ratio <code>T(n) / n³ = 7 + 11/n + 9/n² + 11/n³</code> decreases toward 7. Any <code>C &gt; 7</code> therefore gives an eventual bound.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section space" aria-labelledby="space-title">
+      <h2 id="space-title">2. Space complexity</h2>
+      <p class="section-intro">Space complexity describes how peak storage grows with <code>n</code>. This model counts one slot per numeric list entry and one per named scalar variable. It includes the result and working storage. The two inputs are accounted for separately.</p>
+      <div class="analysis-grid">
+        <div class="panel count-panel">
+          <h3>Exact peak storage</h3>
+          <output class="metric-value" id="space-count" for="matrix-size">77 slots</output>
+          <p>The result is <strong id="result-dimensions">8 × 8</strong>. The peak occurs when the result, buffer, and scalar variables are all in use.</p>
+          <div class="table-scroll">
+            <table aria-label="Peak storage breakdown">
+              <thead><tr><th scope="col">Storage</th><th scope="col">Slots</th><th scope="col" class="numeric">At this size</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Result matrix</th><td><code>n²</code></td><td class="numeric" id="result-slots"></td></tr>
+                <tr><th scope="row">Reusable column buffer</th><td><code>n</code></td><td class="numeric" id="buffer-slots"></td></tr>
+                <tr><th scope="row">Scalars <code>n</code>, <code>i</code>, <code>j</code>, <code>k</code>, and <code>total</code></th><td><code>5</code></td><td class="numeric" id="scalar-slots"></td></tr>
+              </tbody>
+              <tfoot><tr><th scope="row">Peak total</th><td class="formula">n² + n + 5</td><td class="numeric" id="total-slots"></td></tr></tfoot>
+            </table>
+          </div>
+          <p>Each input has <code>n²</code> numeric entries. Counting both as well gives <code>3n² + n + 5</code> slots.</p>
+        </div>
+        <div class="panel growth-panel">
+          <figure class="chart">
+            <figcaption><h3>Space growth</h3>Peak slots by matrix size</figcaption>
+            <div class="bound-settings">
+              <div class="field">
+                <label for="space-multiplier">Space bound multiplier <code>C</code></label>
+                <input id="space-multiplier" type="number" min="0.01" max="50" step="0.01" value="2" required>
+              </div>
+            </div>
+            <svg id="space-chart" role="img" aria-label="Exact peak storage and Big O reference by matrix size"></svg>
+            <ul class="chart-key" aria-label="Curve values at the selected size">
+              <li>Exact formula <strong data-exact-value>77</strong></li>
+              <li class="reference-key"><span>Big O comparison <code data-bound-formula>2 × n²</code></span><strong data-reference-value>128</strong></li>
+            </ul>
+            <p class="bound-status" id="space-bound-status" aria-live="polite"></p>
+          </figure>
+          <div class="big-o">
+            <h3>Big O &middot; <code>O(n²)</code> space including the result</h3>
+            <p>The ratio <code>S(n) / n² = 1 + 1/n + 5/n²</code> decreases toward 1, so any <code>C &gt; 1</code> gives an eventual bound. The <strong>auxiliary space</strong> outside the inputs and result is <code>n + 5</code> slots and grows as <code>O(n)</code>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div class="footer-person">
+      <span class="footer-mark">ULPGC</span>
+      <div><strong>Prof. Dr. José Miguel Santana Núñez</strong><span>Department of Computer Engineering &middot; University of Las Palmas de Gran Canaria</span></div>
+    </div>
+  </footer>
+  <script>
+    'use strict';
+
+    const slider = document.getElementById('matrix-size');
+    const chartRange = document.getElementById('chart-range');
+    const sizeInput = document.getElementById('matrix-size-input');
+    const rangeEnd = document.getElementById('range-end');
+    const minSize = Number(slider.min);
+    const format = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
+    const axisFormat = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
+    const dimensions = document.getElementById('matrix-dimensions');
+    const stepCount = document.getElementById('step-count');
+    const spaceCount = document.getElementById('space-count');
+    const resultDimensions = document.getElementById('result-dimensions');
+    const totalCount = document.getElementById('total-count');
+    const totalSlots = document.getElementById('total-slots');
+
+    function calculateCost(n) {
+      const cells = n ** 2;
+      const iterations = n ** 3;
+      const steps = {
+        setup: 3,
+        allocation: cells + 4 * n + 6,
+        loop: (1 + 2 * n + cells) * (n + 2),
+        read: 3 * iterations + 3 * cells,
+        arithmetic: 2 * iterations,
+        accumulator: cells + iterations,
+        write: 2 * cells
+      };
+      const slots = {
+        result: cells,
+        buffer: n,
+        scalar: 5
+      };
+      return {
+        steps,
+        slots,
+        totalSteps: Object.values(steps).reduce((sum, count) => sum + count, 0),
+        peakSlots: Object.values(slots).reduce((sum, count) => sum + count, 0)
+      };
+    }
+
+    const initialCost = calculateCost(minSize);
+    const stepRows = Object.keys(initialCost.steps).map(key => [key, document.getElementById(`${key}-count`)]);
+    const slotRows = Object.keys(initialCost.slots).map(key => [key, document.getElementById(`${key}-slots`)]);
+    const charts = [
+      { name: 'time', metric: 'totalSteps', power: 3, term: 'n³', leading: 7, unit: 'steps' },
+      { name: 'space', metric: 'peakSlots', power: 2, term: 'n²', leading: 1, unit: 'slots' }
+    ].map(chart => {
+      const svg = document.getElementById(`${chart.name}-chart`);
+      const figure = svg.parentElement;
+      const multiplier = document.getElementById(`${chart.name}-multiplier`);
+      return {
+        ...chart,
+        svg,
+        multiplier,
+        hundredths: Math.round(multiplier.valueAsNumber * 100),
+        exactValue: figure.querySelector('[data-exact-value]'),
+        referenceValue: figure.querySelector('[data-reference-value]'),
+        formula: figure.querySelector('[data-bound-formula]'),
+        status: document.getElementById(`${chart.name}-bound-status`)
+      };
+    });
+
+    function findThreshold({ metric, power, leading, hundredths }) {
+      if (hundredths <= leading * 100) return null;
+
+      // The cost divided by n to this power decreases, so coverage persists after the first match.
+      const covers = n => hundredths * n ** power >= 100 * calculateCost(n)[metric];
+      let low = minSize;
+      let high = minSize;
+      while (!covers(high)) high *= 2;
+      while (low < high) {
+        const middle = Math.floor((low + high) / 2);
+        if (covers(middle)) high = middle;
+        else low = middle + 1;
+      }
+      return low;
+    }
+
+    function drawChart(chart, n, maxSize) {
+      const { svg, metric, power, term, leading, unit, hundredths, threshold } = chart;
+      const exact = size => calculateCost(size)[metric];
+      const reference = size => hundredths * size ** power / 100;
+      const exactLabel = format.format(exact(n));
+      const referenceLabel = format.format(reference(n));
+      chart.exactValue.textContent = exactLabel;
+      chart.referenceValue.textContent = referenceLabel;
+      chart.formula.textContent = `${format.format(hundredths / 100)} × ${term}`;
+      let status;
+      if (!chart.multiplier.validity.valid) {
+        status = 'Enter a multiplier from 0.01 to 50, with up to two decimal places.';
+      } else if (threshold === null) {
+        status = `No finite threshold for this multiplier. Choose C > ${leading} for an eventual upper bound.`;
+      } else if (threshold > maxSize) {
+        status = `The upper bound starts at n₀ = ${format.format(threshold)}, beyond the current chart range.`;
+      } else {
+        status = `Upper bound for every n ≥ ${format.format(threshold)}. The shaded region starts at n₀ = ${format.format(threshold)}.`;
+      }
+      if (chart.status.textContent !== status) chart.status.textContent = status;
+
+      const width = svg.clientWidth;
+      const height = svg.clientHeight;
+      const left = 43;
+      const right = width - 19;
+      const top = 13;
+      const bottom = height - 44;
+      if (right <= left || bottom <= top) return;
+
+      const largest = Math.max(exact(maxSize), reference(maxSize));
+      const tickCount = 4;
+      const magnitude = 10 ** Math.floor(Math.log10(largest / tickCount));
+      const tickStep = Math.ceil(largest / (tickCount * magnitude)) * magnitude;
+      const x = size => left + (size - minSize) * (right - left) / (maxSize - minSize);
+      const y = count => bottom - count * (bottom - top) / (tickCount * tickStep);
+      const yTicks = Array.from({ length: tickCount + 1 }, (_, i) => {
+        const value = i * tickStep;
+        return `<line class="grid-line" x1="${left}" y1="${y(value)}" x2="${right}" y2="${y(value)}" />
+          <text x="${left - 7}" y="${y(value)}" dy=".34em" text-anchor="end">${axisFormat.format(value)}</text>`;
+      }).join('');
+      const xTicks = [minSize, maxSize / 4, maxSize / 2, 3 * maxSize / 4, maxSize].map(size =>
+        `<text x="${x(size)}" y="${bottom + 17}" text-anchor="middle">${format.format(size)}</text>`
+      ).join('');
+      const span = maxSize - minSize;
+      const intervals = Math.min(128, span);
+      const samples = new Set(Array.from({ length: intervals + 1 }, (_, i) => minSize + Math.round(i * span / intervals)));
+      samples.add(n);
+      const visibleThreshold = threshold !== null && threshold <= maxSize;
+      if (visibleThreshold) {
+        samples.add(threshold);
+        if (threshold > minSize) samples.add(threshold - 1);
+      }
+      const sizes = [...samples].sort((a, b) => a - b);
+      const points = cost => sizes.map(size => `${x(size)},${y(cost(size))}`).join(' ');
+      const boundRegion = visibleThreshold
+        ? `<rect class="bound-region" x="${x(threshold)}" y="${top}" width="${right - x(threshold)}" height="${bottom - top}" />`
+        : '';
+      const thresholdGuide = visibleThreshold
+        ? `<line class="threshold" x1="${x(threshold)}" y1="${top}" x2="${x(threshold)}" y2="${bottom}" />`
+        : '';
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      svg.setAttribute('aria-label', `Matrix sizes ${minSize} to ${format.format(maxSize)}. At n = ${format.format(n)}, the exact cost is ${exactLabel} ${unit} and the dashed curve is ${referenceLabel}. ${status}`);
+      svg.innerHTML = `${boundRegion}${yTicks}${xTicks}
+        <text x="${(left + right) / 2}" y="${height - 5}" text-anchor="middle">Matrix size n</text>
+        ${thresholdGuide}
+        <line class="selection" x1="${x(n)}" y1="${top}" x2="${x(n)}" y2="${bottom}" />
+        <polyline class="curve" points="${points(exact)}" />
+        <polyline class="curve reference-curve" points="${points(reference)}" />
+        <circle class="point" cx="${x(n)}" cy="${y(exact(n))}" r="5" />`;
+    }
+
+    function drawCharts() {
+      for (const chart of charts) drawChart(chart, slider.valueAsNumber, Number(slider.max));
+    }
+
+    function update() {
+      const n = slider.valueAsNumber;
+      const { steps, slots, totalSteps, peakSlots } = calculateCost(n);
+      sizeInput.value = n;
+      const label = format.format(n);
+      dimensions.textContent = `${label} × ${label}`;
+      resultDimensions.textContent = dimensions.textContent;
+      slider.setAttribute('aria-valuetext', `${n} by ${n}`);
+      stepCount.value = `${format.format(totalSteps)} steps`;
+      spaceCount.value = `${format.format(peakSlots)} slots`;
+      totalCount.textContent = format.format(totalSteps);
+      totalSlots.textContent = format.format(peakSlots);
+      for (const [key, cell] of stepRows) cell.textContent = format.format(steps[key]);
+      for (const [key, cell] of slotRows) cell.textContent = format.format(slots[key]);
+      drawCharts();
+    }
+
+    function updateRange() {
+      slider.max = chartRange.value;
+      sizeInput.max = chartRange.value;
+      rangeEnd.textContent = format.format(Number(slider.max));
+      update();
+    }
+
+    slider.addEventListener('input', update);
+    chartRange.addEventListener('change', updateRange);
+    sizeInput.addEventListener('input', () => {
+      if (!sizeInput.validity.valid) return;
+      slider.value = sizeInput.value;
+      update();
+    });
+    sizeInput.addEventListener('blur', () => {
+      if (!sizeInput.validity.valid) sizeInput.value = slider.value;
+    });
+    const chartObserver = new ResizeObserver(drawCharts);
+    for (const chart of charts) {
+      chart.threshold = findThreshold(chart);
+      chart.multiplier.addEventListener('input', () => {
+        if (chart.multiplier.validity.valid) {
+          chart.hundredths = Math.round(chart.multiplier.valueAsNumber * 100);
+          chart.threshold = findThreshold(chart);
+        }
+        drawChart(chart, slider.valueAsNumber, Number(slider.max));
+      });
+      chartObserver.observe(chart.svg);
+    }
+    updateRange();
+  </script>
+</body>
+</html>
