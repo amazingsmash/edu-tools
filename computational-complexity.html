@@ -53,9 +53,6 @@
     .eyebrow { color: #16749f; font-size: .7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
     .intro { max-width: 64ch; }
     .hero, .section { margin-top: 26px; padding: clamp(20px, 3vw, 36px); border: 1px solid #e1e8f1; border-radius: 22px; background: var(--surface); box-shadow: var(--shadow); }
-    .hero { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(230px, .85fr); gap: 24px; align-items: center; }
-    .hero-note { padding: 16px 18px; border: 1px solid #d6e6f3; border-radius: 16px; background: linear-gradient(135deg, #f3f9fe, #fbfdff); }
-    .hero-note p { margin-top: 6px; font-size: .88rem; }
     .section > h2 { margin-bottom: 12px; }
     .panel { min-width: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--soft); }
     .algorithm { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 18px 32px; padding: 18px; }
@@ -159,7 +156,7 @@
       body { padding: 0 14px 36px; }
       .site-header { min-height: 72px; }
       .top-nav { display: none; }
-      .hero, .example { grid-template-columns: minmax(0, 1fr); }
+      .example { grid-template-columns: minmax(0, 1fr); }
       .hero, .section { margin-top: 17px; padding: 18px 14px; }
       .count-panel, .growth-panel { padding-inline: 12px; }
       .algorithm { padding: 14px 10px; }
@@ -181,15 +178,9 @@
   </header>
   <main>
     <div class="hero">
-      <div>
-        <p class="eyebrow">Algorithms &middot; Interactive Python example</p>
-        <h1>A Study in Computational Complexity</h1>
-        <p class="intro">Computational complexity describes how the work and memory an algorithm needs grow as its input gets larger. Explore both using square matrix multiplication.</p>
-      </div>
-      <aside class="hero-note">
-        <h3>What makes a Big O bound?</h3>
-        <p>Choose a multiplier <code>C</code> and look for the first size <code>n₀</code> where the dashed curve is at least as high as the exact cost and stays there.</p>
-      </aside>
+      <p class="eyebrow">Algorithms &middot; Interactive Python example</p>
+      <h1>A Study in Computational Complexity</h1>
+      <p class="intro">Computational complexity describes how the work and memory an algorithm needs grow as its input gets larger. Explore both using square matrix multiplication.</p>
     </div>
 
     <section class="section" aria-labelledby="algorithm-title">
