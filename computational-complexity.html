@@ -117,7 +117,11 @@
     tfoot { font-weight: 700; }
     .formula { color: var(--text); font-weight: 650; }
 
-    .chart h3 { color: var(--text); }
+    .chart-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+    .chart-heading h3 { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 9px; }
+    .chart-order { padding: 3px 7px; border-radius: 6px; background: color-mix(in srgb, var(--series) 10%, #fff); color: var(--series); white-space: nowrap; }
+    .chart-range { display: flex; align-items: center; gap: 5px; font-size: .75rem; }
+    .chart-range select { padding: 3px 5px; border: 1px solid #b8cbdc; border-radius: 6px; background: #fff; color: #193d63; }
     .chart svg { display: block; width: 100%; height: 228px; margin-top: 6px; }
     .chart svg text { fill: var(--muted); font-size: 12px; }
     .chart .grid-line { stroke: var(--line); }
@@ -132,14 +136,14 @@
     .chart-key li::before { content: ""; width: 18px; flex: 0 0 auto; border-top: 2px solid var(--series); align-self: center; }
     .chart-key .reference-key::before { border-top: 2px dashed var(--reference); }
     .chart-key strong { margin-inline-start: auto; color: var(--text); font-variant-numeric: tabular-nums; }
-    .bound-settings { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: end; margin-block: 10px 3px; }
-    .bound-settings .field input { width: 92px; }
+    .chart-selection { margin-top: 5px; font-size: .79rem; }
+    .bound-settings { margin-top: 8px; }
+    .bound-settings .field { display: flex; align-items: center; gap: 8px; }
+    .bound-settings .field input { width: 70px; min-width: 0; padding: 3px 6px; font-size: .8rem; }
     .bound-settings .field input:invalid { border-color: var(--reference); }
     .bound-status { margin-block: 8px 0; padding: 8px 10px; border-left: 3px solid #d89a55; border-radius: 4px 8px 8px 4px; background: #fff6e8; color: #71431d; font-size: .83rem; }
     .bound-status:empty { display: none; }
-    .big-o { margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
-    .big-o p { margin-top: 6px; }
-    .big-o h3 { color: var(--series); }
+    .big-o { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--line); font-size: .85rem; }
 
     .site-footer { margin-top: 26px; padding: 24px 6px 0; border-top: 1px solid #dce6ef; }
     .footer-person { display: flex; gap: 12px; align-items: center; }
@@ -273,18 +277,8 @@
       <h2 id="explore-title">Explore a matrix size</h2>
       <div class="settings">
         <div class="field">
-          <label for="chart-range">Maximum <code>n</code> on both charts</label>
-          <select id="chart-range">
-            <option value="32">32</option>
-            <option value="128">128</option>
-            <option value="512">512</option>
-            <option value="2048">2,048</option>
-            <option value="8192">8,192</option>
-          </select>
-        </div>
-        <div class="field">
           <label for="matrix-size-input">Enter a matrix size</label>
-          <input id="matrix-size-input" type="number" min="1" max="32" step="1" value="8" required>
+          <input id="matrix-size-input" type="number" min="1" max="8192" step="1" value="8" required>
         </div>
       </div>
       <div class="panel control">
@@ -329,24 +323,37 @@
         </div>
         <div class="panel growth-panel">
           <figure class="chart">
-            <figcaption><h3>Time growth</h3>Modeled steps by matrix size</figcaption>
-            <div class="bound-settings">
-              <div class="field">
-                <label for="time-multiplier">Time bound multiplier <code>C</code></label>
-                <input id="time-multiplier" type="number" min="0.01" max="50" step="0.01" value="8" required>
+            <figcaption class="chart-heading">
+              <h3>Time Growth <code class="chart-order">O(n³)</code></h3>
+              <div class="chart-range">
+                <label for="time-range">Max <code>n</code></label>
+                <select id="time-range" aria-label="Max n for time chart">
+                  <option value="32">32</option>
+                  <option value="128">128</option>
+                  <option value="512">512</option>
+                  <option value="2048">2,048</option>
+                  <option value="8192">8,192</option>
+                </select>
               </div>
-            </div>
+            </figcaption>
             <svg id="time-chart" role="img" aria-label="Exact step count and Big O reference by matrix size"></svg>
+            <p class="chart-selection" data-chart-selection>Values at n = 8</p>
             <ul class="chart-key" aria-label="Curve values at the selected size">
               <li>Exact formula <strong data-exact-value>4,371</strong></li>
               <li class="reference-key"><span>Big O comparison <code data-bound-formula>8 × n³</code></span><strong data-reference-value>4,096</strong></li>
             </ul>
             <p class="bound-status" id="time-bound-status" aria-live="polite"></p>
           </figure>
-          <div class="big-o">
-            <h3>Big O &middot; <code>O(n³)</code> time</h3>
+          <details class="big-o">
+            <summary>Big O settings and explanation</summary>
+            <div class="bound-settings">
+              <div class="field">
+                <label for="time-multiplier">Time bound multiplier <code>C</code></label>
+                <input id="time-multiplier" type="number" min="0.01" max="50" step="0.01" value="8" required>
+              </div>
+            </div>
             <p>Big O asks whether some constant <code>C</code> gives <code>T(n) ≤ C × n³</code> for every <code>n ≥ n₀</code>. The ratio <code>T(n) / n³ = 7 + 11/n + 9/n² + 11/n³</code> decreases toward 7. Any <code>C &gt; 7</code> therefore gives an eventual bound.</p>
-          </div>
+          </details>
         </div>
       </div>
     </section>
@@ -374,24 +381,37 @@
         </div>
         <div class="panel growth-panel">
           <figure class="chart">
-            <figcaption><h3>Space growth</h3>Peak slots by matrix size</figcaption>
-            <div class="bound-settings">
-              <div class="field">
-                <label for="space-multiplier">Space bound multiplier <code>C</code></label>
-                <input id="space-multiplier" type="number" min="0.01" max="50" step="0.01" value="2" required>
+            <figcaption class="chart-heading">
+              <h3>Space Growth <code class="chart-order">O(n²)</code></h3>
+              <div class="chart-range">
+                <label for="space-range">Max <code>n</code></label>
+                <select id="space-range" aria-label="Max n for space chart">
+                  <option value="32">32</option>
+                  <option value="128">128</option>
+                  <option value="512">512</option>
+                  <option value="2048">2,048</option>
+                  <option value="8192">8,192</option>
+                </select>
               </div>
-            </div>
+            </figcaption>
             <svg id="space-chart" role="img" aria-label="Exact peak storage and Big O reference by matrix size"></svg>
+            <p class="chart-selection" data-chart-selection>Values at n = 8</p>
             <ul class="chart-key" aria-label="Curve values at the selected size">
               <li>Exact formula <strong data-exact-value>77</strong></li>
               <li class="reference-key"><span>Big O comparison <code data-bound-formula>2 × n²</code></span><strong data-reference-value>128</strong></li>
             </ul>
             <p class="bound-status" id="space-bound-status" aria-live="polite"></p>
           </figure>
-          <div class="big-o">
-            <h3>Big O &middot; <code>O(n²)</code> space including the result</h3>
+          <details class="big-o">
+            <summary>Big O settings and explanation</summary>
+            <div class="bound-settings">
+              <div class="field">
+                <label for="space-multiplier">Space bound multiplier <code>C</code></label>
+                <input id="space-multiplier" type="number" min="0.01" max="50" step="0.01" value="2" required>
+              </div>
+            </div>
             <p>The ratio <code>S(n) / n² = 1 + 1/n + 5/n²</code> decreases toward 1, so any <code>C &gt; 1</code> gives an eventual bound. The <strong>auxiliary space</strong> outside the inputs and result is <code>n + 5</code> slots and grows as <code>O(n)</code>.</p>
-          </div>
+          </details>
         </div>
       </div>
     </section>
@@ -406,7 +426,6 @@
     'use strict';
 
     const slider = document.getElementById('matrix-size');
-    const chartRange = document.getElementById('chart-range');
     const sizeInput = document.getElementById('matrix-size-input');
     const rangeEnd = document.getElementById('range-end');
     const minSize = Number(slider.min);
@@ -458,10 +477,12 @@
         ...chart,
         svg,
         multiplier,
+        range: document.getElementById(`${chart.name}-range`),
         hundredths: Math.round(multiplier.valueAsNumber * 100),
         exactValue: figure.querySelector('[data-exact-value]'),
         referenceValue: figure.querySelector('[data-reference-value]'),
         formula: figure.querySelector('[data-bound-formula]'),
+        selection: figure.querySelector('[data-chart-selection]'),
         status: document.getElementById(`${chart.name}-bound-status`)
       };
     });
@@ -482,8 +503,10 @@
       return low;
     }
 
-    function drawChart(chart, n, maxSize) {
-      const { svg, metric, power, term, leading, unit, hundredths, threshold } = chart;
+    function drawChart(chart, n) {
+      const { svg, metric, power, term, leading, unit, range, hundredths, threshold } = chart;
+      const maxSize = Number(range.value);
+      const visibleSelection = n <= maxSize;
       const exact = size => calculateCost(size)[metric];
       const reference = size => hundredths * size ** power / 100;
       const exactLabel = format.format(exact(n));
@@ -491,6 +514,9 @@
       chart.exactValue.textContent = exactLabel;
       chart.referenceValue.textContent = referenceLabel;
       chart.formula.textContent = `${format.format(hundredths / 100)} × ${term}`;
+      chart.selection.textContent = visibleSelection
+        ? `Values at n = ${format.format(n)}`
+        : `Values at n = ${format.format(n)}, outside this chart’s range`;
       let status;
       if (!chart.multiplier.validity.valid) {
         status = 'Enter a multiplier from 0.01 to 50, with up to two decimal places.';
@@ -528,7 +554,7 @@
       const span = maxSize - minSize;
       const intervals = Math.min(128, span);
       const samples = new Set(Array.from({ length: intervals + 1 }, (_, i) => minSize + Math.round(i * span / intervals)));
-      samples.add(n);
+      if (visibleSelection) samples.add(n);
       const visibleThreshold = threshold !== null && threshold <= maxSize;
       if (visibleThreshold) {
         samples.add(threshold);
@@ -542,19 +568,22 @@
       const thresholdGuide = visibleThreshold
         ? `<line class="threshold" x1="${x(threshold)}" y1="${top}" x2="${x(threshold)}" y2="${bottom}" />`
         : '';
+      const selectedPoint = visibleSelection
+        ? `<line class="selection" x1="${x(n)}" y1="${top}" x2="${x(n)}" y2="${bottom}" />
+           <circle class="point" cx="${x(n)}" cy="${y(exact(n))}" r="5" />`
+        : '';
       svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-      svg.setAttribute('aria-label', `Matrix sizes ${minSize} to ${format.format(maxSize)}. At n = ${format.format(n)}, the exact cost is ${exactLabel} ${unit} and the dashed curve is ${referenceLabel}. ${status}`);
+      svg.setAttribute('aria-label', `Matrix sizes ${minSize} to ${format.format(maxSize)}. ${chart.selection.textContent}. Exact cost ${exactLabel} ${unit}. Dashed curve ${referenceLabel}. ${status}`);
       svg.innerHTML = `${boundRegion}${yTicks}${xTicks}
         <text x="${(left + right) / 2}" y="${height - 5}" text-anchor="middle">Matrix size n</text>
         ${thresholdGuide}
-        <line class="selection" x1="${x(n)}" y1="${top}" x2="${x(n)}" y2="${bottom}" />
         <polyline class="curve" points="${points(exact)}" />
         <polyline class="curve reference-curve" points="${points(reference)}" />
-        <circle class="point" cx="${x(n)}" cy="${y(exact(n))}" r="5" />`;
+        ${selectedPoint}`;
     }
 
     function drawCharts() {
-      for (const chart of charts) drawChart(chart, slider.valueAsNumber, Number(slider.max));
+      for (const chart of charts) drawChart(chart, slider.valueAsNumber);
     }
 
     function update() {
@@ -574,18 +603,18 @@
       drawCharts();
     }
 
-    function updateRange() {
-      slider.max = chartRange.value;
-      sizeInput.max = chartRange.value;
-      rangeEnd.textContent = format.format(Number(slider.max));
-      update();
+    function updateSliderLimit(n) {
+      const maxSize = Math.max(n, ...charts.map(chart => Number(chart.range.value)));
+      slider.max = maxSize;
+      rangeEnd.textContent = format.format(maxSize);
     }
 
     slider.addEventListener('input', update);
-    chartRange.addEventListener('change', updateRange);
     sizeInput.addEventListener('input', () => {
       if (!sizeInput.validity.valid) return;
-      slider.value = sizeInput.value;
+      const n = sizeInput.valueAsNumber;
+      updateSliderLimit(n);
+      slider.value = n;
       update();
     });
     sizeInput.addEventListener('blur', () => {
@@ -594,16 +623,22 @@
     const chartObserver = new ResizeObserver(drawCharts);
     for (const chart of charts) {
       chart.threshold = findThreshold(chart);
+      chart.range.addEventListener('change', () => {
+        const n = slider.valueAsNumber;
+        updateSliderLimit(n);
+        drawChart(chart, n);
+      });
       chart.multiplier.addEventListener('input', () => {
         if (chart.multiplier.validity.valid) {
           chart.hundredths = Math.round(chart.multiplier.valueAsNumber * 100);
           chart.threshold = findThreshold(chart);
         }
-        drawChart(chart, slider.valueAsNumber, Number(slider.max));
+        drawChart(chart, slider.valueAsNumber);
       });
       chartObserver.observe(chart.svg);
     }
-    updateRange();
+    updateSliderLimit(slider.valueAsNumber);
+    update();
   </script>
 </body>
 </html>
