@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Follow five animated Git stages and compare the commit history on a laptop and on GitHub.">
+  <title>Git Visualizer | ULPGC</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #14243e;
+      --muted: #536880;
+      --blue: #1475bb;
+      --blue-dark: #005e9f;
+      --teal: #087e7a;
+      --violet: #6652a4;
+      --line: #dfe7f1;
+      --soft: #f5f9fd;
+      --mono: Consolas, "Courier New", monospace;
+      font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0 24px 48px;
+      background: radial-gradient(circle at 10% 0%, #e8f2fd 0, transparent 32%), #f4f7fb;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    main { width: min(1200px, 100%); margin-inline: auto; }
+    h1, h2, h3, p, pre { margin: 0; }
+    h1 { color: #173354; font-size: clamp(2rem, 4.3vw, 3.2rem); line-height: 1.12; letter-spacing: -.045em; margin: 5px 0 7px; }
+    h2 { color: #173354; font-size: clamp(1.35rem, 2.5vw, 1.85rem); line-height: 1.2; letter-spacing: -.03em; }
+    h3 { color: #244665; font-size: .95rem; }
+    p { color: var(--muted); }
+    code { font-family: var(--mono); }
+    button { color: inherit; font: inherit; cursor: pointer; }
+    button:disabled, button[aria-disabled="true"] { cursor: default; opacity: .55; }
+    :focus-visible { outline: 3px solid #1679b5; outline-offset: 3px; }
+    [hidden] { display: none !important; }
+    .site-header {
+      min-height: 80px; display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; border-bottom: 1px solid #dce6f0;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .brand img { width: 42px; height: 43px; object-fit: contain; }
+    .brand-text { display: grid; line-height: 1.15; }
+    .brand-text strong { color: #173f7b; font-size: 1.15rem; letter-spacing: -.035em; }
+    .brand-text small { color: var(--muted); font-size: .69rem; margin-top: 4px; }
+    .header-actions { display: flex; align-items: center; gap: clamp(8px, 2vw, 22px); }
+    .top-nav { color: var(--muted); text-decoration: none; font-size: .86rem; font-weight: 650; }
+    .top-nav:hover { color: var(--blue-dark); }
+    .language-toggle {
+      min-width: 44px; min-height: 36px; border: 1px solid #c8dced; border-radius: 999px;
+      background: #fff; color: #165b91; font-size: .8rem; font-weight: 750;
+    }
+    .language-toggle:hover, .language-toggle:focus-visible { background: #eaf5fc; border-color: #65acd6; }
+    .intro { margin: 20px 0 17px; }
+    .eyebrow { color: #16749f; font-size: .7rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+    .panel { background: #fff; border: 1px solid #e1e8f1; border-radius: 22px; box-shadow: 0 12px 38px rgba(24, 49, 83, .055); padding: clamp(13px, 2.1vw, 26px); }
+    .stage-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; padding: 0; margin: 0 0 18px; list-style: none; }
+    .button {
+      min-height: 40px; padding: 7px 11px; border-radius: 9px; border: 1px solid #d6e5f1;
+      background: #eaf2f9; color: #285678; font-size: .82rem; font-weight: 750;
+      transition: border-color .18s, background .18s;
+    }
+    .button:hover:not(:disabled, [aria-disabled="true"]) { border-color: #79afd2; background: #e3eff8; }
+    .stage-list button { width: 100%; height: 100%; background: var(--soft); }
+    .stage-list button[aria-current="step"] { background: #e4f2fc; border-color: #79afd2; color: var(--blue-dark); }
+    .stage-number { margin-right: .4em; color: var(--muted); font-size: .74rem; }
+    .stage-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px 18px; flex-wrap: wrap; }
+    .stage-heading p { max-width: 77ch; margin-top: 4px; font-size: .91rem; }
+    .primary { min-width: 112px; border-color: var(--blue-dark); background: var(--blue-dark); color: #fff; }
+    .primary:hover:not([aria-disabled="true"]) { background: #074c7c; }
+    .status {
+      margin: 12px 0; padding: 8px 11px; min-height: 39px; border-left: 3px solid #78b8e2;
+      border-radius: 4px 8px 8px 4px; background: var(--soft); font-size: .85rem;
+    }
+    .status[data-issue] { background: #fff1ec; border-color: #cf6c48; color: #913e23; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 12px; grid-template-areas: "commands trees" "commands snapshot"; align-items: start; }
+    .commands, .repository, .snapshot { min-width: 0; border: 1px solid var(--line); border-radius: 13px; background: #fbfdff; }
+    .commands { grid-area: commands; }
+    .commands h3, .repo-heading, .snapshot-heading { padding: 9px 12px; border-bottom: 1px solid var(--line); }
+    .command-list { list-style: none; margin: 0; padding: 0; }
+    .command-row {
+      display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); gap: 8px;
+      align-items: start; padding: 10px 11px; border-left: 3px solid transparent;
+    }
+    .command-row + .command-row { border-top: 1px solid #e7eef6; }
+    .command-row:last-child { border-radius: 0 0 12px 12px; }
+    .command-row[aria-current="step"] { border-left-color: var(--blue); background: #eaf4fd; }
+    .command-row.issue { border-left-color: #cf6c48; }
+    .command-row[aria-current="step"].issue { background: #fff1ec; }
+    .command-row code { color: #193d63; font-size: .81rem; overflow-wrap: anywhere; }
+    .comment { color: var(--muted); font-size: .78rem; }
+    .comment::before { content: "# "; color: var(--teal); }
+    .issue-label { display: block; margin-top: 4px; color: #913e23; font-size: .74rem; font-weight: 750; }
+    .trees { grid-area: trees; position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .repo-heading { display: flex; align-items: center; gap: 7px; }
+    .repo-icon { display: inline-grid; flex: none; place-items: center; width: 25px; height: 25px; border-radius: 6px; background: #e5f1fb; color: #176393; }
+    .repo-icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .repository { display: grid; grid-template-rows: 44px 225px 43px; }
+    .graph { position: relative; margin-inline: 6px; }
+    .graph > svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .graph-empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 4px; font-size: .82rem; }
+    .edge { fill: none; stroke: #538eb8; stroke-width: 2.5; }
+    .edge.sam { stroke: #8875bc; }
+    .edge.enter { animation: trace .43s var(--delay) ease-out both; }
+    @keyframes trace { from { stroke-dasharray: 1; stroke-dashoffset: 1; } to { stroke-dasharray: 1; stroke-dashoffset: 0; } }
+    .commit {
+      position: absolute; left: var(--x); top: var(--y); width: 38px; height: 38px;
+      transform: translate(-50%, -50%); display: grid; place-items: center; z-index: 1;
+      border: 0; border-radius: 50%; background: transparent; padding: 0; color: var(--blue-dark);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .commit.sam { color: var(--violet); }
+    .commit-dot {
+      display: grid; place-items: center; width: 29px; height: 29px; border: 2px solid currentColor;
+      border-radius: 50%; background: #fff; font: 800 .85rem var(--mono);
+      transition: background .16s, box-shadow .16s;
+    }
+    .commit.checkout .commit-dot { background: #e3f2fe; box-shadow: 0 0 0 4px #d9edf9; }
+    .commit.sam.checkout .commit-dot { background: #f0eafd; box-shadow: 0 0 0 4px #ece5f8; }
+    .commit:hover .commit-dot, .commit:focus-visible .commit-dot, .commit[aria-pressed="true"] .commit-dot { background: #d4eafd; box-shadow: 0 0 0 4px #c5e2f6; }
+    .commit.sam:hover .commit-dot, .commit.sam:focus-visible .commit-dot, .commit.sam[aria-pressed="true"] .commit-dot { background: #e5dcfa; box-shadow: 0 0 0 4px #e4daf7; }
+    .commit.conflicted .commit-dot { outline: 3px solid #efb29a; outline-offset: 2px; }
+    .commit.enter .commit-dot { animation: appear .25s calc(var(--delay) + .12s) both; }
+    @keyframes appear { from { opacity: 0; transform: scale(.45); } }
+    .refs { display: flex; align-content: start; align-items: center; flex-wrap: wrap; gap: 3px 5px; padding: 3px 9px; }
+    .ref { display: inline-block; border-radius: 5px; padding: 2px 5px; background: #edf3f9; color: #365c79; font: 700 .71rem/1.3 var(--mono); }
+    .ref.current { background: #deeffd; color: #134f7e; }
+    .ref.enter { animation: ref-in .4s ease-out both; }
+    @keyframes ref-in { from { opacity: .4; transform: translateY(3px); } }
+    .transfer {
+      position: absolute; z-index: 2; top: 78px; left: 50%; translate: -50% 0;
+      width: 27px; height: 27px; display: grid; place-items: center; border-radius: 50%;
+      background: #e3f5f2; color: #087068; font-weight: 800; pointer-events: none;
+    }
+    .transfer[data-flow="push"] { animation: to-remote .6s ease-out both; }
+    .transfer[data-flow="fetch"] { animation: to-laptop .6s ease-out both; }
+    .transfer[data-flow="rejected"] { background: #fff1ec; color: #913e23; animation: to-remote .4s ease-out both; }
+    @keyframes to-remote { from { opacity: .3; transform: translateX(-11px); } }
+    @keyframes to-laptop { from { opacity: .3; transform: translateX(11px); } }
+    .snapshot { grid-area: snapshot; }
+    .snapshot-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3px 10px; align-items: baseline; }
+    .snapshot-file { display: flex; align-items: center; gap: 7px; }
+    .snapshot-heading p { font-size: .77rem; }
+    .info-button {
+      display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 0;
+      border: 1px solid #c8dced; border-radius: 50%; background: #fff;
+      color: var(--blue-dark); font-size: .86rem; font-weight: 800;
+    }
+    .info-button:hover, .info-button[aria-expanded="true"] { background: #e4f2fc; border-color: #79afd2; }
+    .snapshot-info { padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: .82rem; }
+    .code-view { padding: 8px 12px 11px; background: #f1f6fc; color: #254563; font-size: .82rem; border-radius: 0 0 12px 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .syntax-string { color: #087268; }
+    .syntax-number { color: #965010; }
+    .syntax-comment { color: #536880; }
+    .syntax-conflict { color: #913e23; background: #fff1ec; font-weight: 700; }
+    .stage-footer { display: flex; justify-content: space-between; gap: 7px; margin-top: 14px; }
+    .site-footer { display: flex; gap: 14px; align-items: center; margin-top: 24px; padding: 18px 4px 0; border-top: 1px solid #dce6ef; }
+    .footer-mark { padding: 9px; border-radius: 8px; background: #e2eff8; color: #26658e; font-size: .74rem; font-weight: 850; }
+    .site-footer strong { display: block; color: #284762; font-size: .83rem; }
+    .site-footer small { display: block; color: var(--muted); font-size: .75rem; }
+    @media (max-width: 820px) {
+      .workspace { grid-template-columns: 1fr; grid-template-areas: "trees" "commands" "snapshot"; }
+      .workspace:has(.snapshot[data-working]) { grid-template-areas: "trees" "snapshot" "commands"; }
+    }
+    @media (max-width: 540px) {
+      body { padding: 0 10px 32px; }
+      .site-header { min-height: 58px; }
+      .brand img { width: 34px; height: 35px; }
+      .intro { margin: 14px 0 12px; }
+      .intro p { font-size: .87rem; }
+      .stage-list { gap: 4px; margin-bottom: 12px; }
+      .stage-list button { padding: 4px 2px; font-size: .69rem; }
+      .stage-number { display: block; margin: 0; }
+      .stage-heading p { font-size: .84rem; }
+      .trees { gap: 10px; }
+      .repo-heading { padding: 5px 7px; font-size: .79rem; line-height: 1.15; }
+      .repo-icon { width: 21px; height: 21px; }
+      .repo-icon svg { width: 13px; height: 13px; }
+      .ref { font-size: .66rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Back to Edu Tools" data-i18n-aria="back">
+        <img src="assets/ulpgc-logo.svg" alt="" width="42" height="43">
+        <span class="brand-text"><strong>ULPGC</strong><small data-i18n="appName">Git Visualizer</small></span>
+      </a>
+      <div class="header-actions">
+        <a class="top-nav" href="index.html" data-i18n="allTools">All tools</a>
+        <button class="language-toggle" type="button" id="language-toggle" aria-label="Switch to Spanish">ES</button>
+      </div>
+    </header>
+
+    <div class="intro">
+      <span class="eyebrow" data-i18n="eyebrow">Version control</span>
+      <h1 data-i18n="appName">Git Visualizer</h1>
+      <p data-i18n="intro">Follow Alex and Sam as they edit the same Python trail guide.</p>
+    </div>
+
+    <section class="panel" id="stage-carousel" aria-labelledby="stage-title" aria-roledescription="carousel">
+      <nav aria-label="Git stages" data-i18n-aria="stages"><ol id="stage-list" class="stage-list"></ol></nav>
+      <noscript><p>Enable JavaScript to run the Git stages.</p></noscript>
+
+      <div class="stage-heading">
+        <div>
+          <h2 id="stage-title" tabindex="-1"></h2>
+          <p id="story"></p>
+        </div>
+        <button class="button primary" id="run" type="button">Run stage</button>
+      </div>
+      <p class="status" id="status" role="status"></p>
+
+      <div class="workspace">
+        <div class="trees">
+          <article class="repository" aria-labelledby="laptop-title">
+            <h3 class="repo-heading">
+              <span class="repo-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="12" rx="2"/><path d="M2 20h20"/></svg></span>
+              <span id="laptop-title"></span>
+            </h3>
+            <div class="graph" id="local-graph" role="group" aria-label="Local commit tree" data-i18n-aria="localGraph"></div>
+            <div class="refs" id="local-refs" aria-label="Local branches" data-i18n-aria="localBranches" role="group"></div>
+          </article>
+          <span class="transfer" id="transfer" aria-hidden="true" hidden></span>
+          <article class="repository" aria-labelledby="github-title">
+            <h3 class="repo-heading" id="github-title">
+              <span class="repo-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></span>
+              GitHub
+            </h3>
+            <div class="graph" id="remote-graph" role="group" aria-label="GitHub commit tree" data-i18n-aria="remoteGraph"></div>
+            <div class="refs" id="remote-refs" aria-label="GitHub branches" data-i18n-aria="remoteBranches" role="group"></div>
+          </article>
+        </div>
+
+        <section class="commands" aria-labelledby="commands-title">
+          <h3 id="commands-title" data-i18n="commands">CLI Commands</h3>
+          <ol id="command-list" class="command-list"></ol>
+        </section>
+
+        <aside class="snapshot" id="snapshot" aria-labelledby="snapshot-title">
+          <div class="snapshot-heading">
+            <div class="snapshot-file">
+              <h3 id="snapshot-title">trails.py</h3>
+              <button class="info-button" type="button" id="code-info-button" aria-label="About this code" data-i18n-aria="aboutCode" aria-expanded="false" aria-controls="code-info"><span aria-hidden="true">i</span></button>
+            </div>
+            <p id="snapshot-label"></p>
+          </div>
+          <p class="snapshot-info" id="code-info" hidden></p>
+          <pre class="code-view" id="code-view" aria-label="Python source code" data-i18n-aria="pythonSource"><code id="source"></code></pre>
+        </aside>
+      </div>
+
+      <nav class="stage-footer" aria-label="Stage navigation" data-i18n-aria="stageNavigation">
+        <button class="button" type="button" id="previous" data-i18n="previous">← Previous stage</button>
+        <button class="button" type="button" id="next" data-i18n="next">Next stage →</button>
+      </nav>
+    </section>
+
+    <footer class="site-footer">
+      <span class="footer-mark">ULPGC</span>
+      <div><strong>Prof. Dr. José Miguel Santana Núñez</strong><small data-i18n="department">Department of Computer Engineering · University of Las Palmas de Gran Canaria</small></div>
+    </footer>
+  </main>
+
+  <script>
+    const ui = {
+      appName: ['Git Visualizer', 'Visualizador de Git'],
+      description: [
+        'Follow five animated Git stages and compare the commit history on a laptop and on GitHub.',
+        'Sigue cinco etapas animadas de Git y compara el historial de commits del portátil y de GitHub.'
+      ],
+      back: ['Back to Edu Tools', 'Volver a Edu Tools'],
+      allTools: ['All tools', 'Todas las herramientas'],
+      switchLanguage: ['Switch to Spanish', 'Cambiar a inglés'],
+      eyebrow: ['Version control', 'Control de versiones'],
+      intro: ['Follow Alex and Sam as they edit the same Python trail guide.', 'Acompaña a Alex y Sam mientras editan la misma guía de rutas en Python.'],
+      stages: ['Git stages', 'Etapas de Git'],
+      carousel: ['carousel', 'carrusel'],
+      localGraph: ['Local commit tree', 'Árbol de commits local'],
+      localBranches: ['Local branches', 'Ramas locales'],
+      remoteGraph: ['GitHub commit tree', 'Árbol de commits de GitHub'],
+      remoteBranches: ['GitHub branches', 'Ramas de GitHub'],
+      commands: ['CLI Commands', 'Comandos de terminal'],
+      aboutCode: ['About this code', 'Acerca de este código'],
+      pythonSource: ['Python source code', 'Código fuente en Python'],
+      stageNavigation: ['Stage navigation', 'Navegación entre etapas'],
+      previous: ['← Previous stage', '← Etapa anterior'],
+      next: ['Next stage →', 'Siguiente etapa →'],
+      department: ['Department of Computer Engineering · University of Las Palmas de Gran Canaria', 'Departamento de Ingeniería Informática · Universidad de Las Palmas de Gran Canaria'],
+      setupLaptop: ['Setup computer', 'Equipo inicial'],
+      alexLaptop: ['Alex’s laptop', 'Portátil de Alex'],
+      samLaptop: ['Sam’s laptop', 'Portátil de Sam'],
+      emptyTree: ['No commits yet', 'Aún no hay commits'],
+      checkout: ['Checked out', 'Versión activa'],
+      conflict: ['Conflict', 'Conflicto'],
+      rejected: ['Rejected', 'Rechazado'],
+      noSnapshot: ['No snapshot yet.', 'Aún no hay una versión guardada.'],
+      selectCommit: ['Select a commit to see its Python.', 'Selecciona un commit para ver su código Python.'],
+      run: ['Run stage', 'Ejecutar etapa'],
+      running: ['Running…', 'En ejecución…'],
+      replay: ['Replay stage', 'Repetir etapa']
+    };
+
+    const pythonComments = {
+      '# Trail lengths in kilometers.': '# Longitud de las rutas en kilómetros.',
+      '# Double the distance to include the way back.': '# Duplica la distancia para incluir la vuelta.',
+      '# Number of trails in the guide.': '# Número de rutas de la guía.'
+    };
+
+    const starter = [
+      '# Trail lengths in kilometers.',
+      'PINE_KM = 4.2',
+      'RIVER_KM = 6.4',
+      '',
+      'total_km = PINE_KM + RIVER_KM',
+      '',
+      'print(total_km)'
+    ].join('\n');
+    const tripDistance = '# Double the distance to include the way back.\nround_trip_km = total_km * 2';
+    const tripOutput = 'print(f"Round trip: {round_trip_km:.1f} km")';
+    const summaryOutput = 'print(f"{TRAIL_COUNT} trails: {total_km:.1f} km")';
+    const alexCalculation = starter.replace('print(total_km)', tripDistance + '\nprint(total_km)');
+    const alexReport = alexCalculation.replace('print(total_km)', tripOutput);
+    const samCount = '# Number of trails in the guide.\nTRAIL_COUNT = 2\n\n' + starter;
+    const samReport = samCount.replace('print(total_km)', summaryOutput);
+    const resolved = samReport.replace(summaryOutput, [tripDistance, '', summaryOutput, tripOutput].join('\n'));
+    const workingFile = {
+      conflict: {
+        title: ['Merge conflict · Both branches changed the output', 'Conflicto de fusión · Ambas ramas cambiaron la salida'],
+        info: ['The markers separate the two versions of the output. HEAD is Alex’s local version, and F came from GitHub.', 'Los marcadores separan las dos versiones de la salida. HEAD es la versión local de Alex y F viene de GitHub.'],
+        source: samReport.replace(summaryOutput, ['<<<<<<< HEAD', tripDistance, tripOutput, '=======', summaryOutput, '>>>>>>> F'].join('\n'))
+      },
+      resolved: {
+        title: ['Resolution · Both outputs kept', 'Resolución · Se conservan ambas salidas'],
+        info: ['The script keeps Alex’s calculation and prints both results. This edit is ready to save as a merge commit.', 'El programa conserva el cálculo de Alex y muestra ambos resultados. El cambio está listo para guardarse en un commit de fusión.'],
+        source: resolved
+      }
+    };
+
+    // Letters stand in for Git's commit IDs. The same letter always has the same code and parents.
+    const commits = {
+      A: {
+        x: 50, y: 23, parents: [], source: starter,
+        title: ['Start the guide', 'Iniciar la guía'],
+        info: ['The script adds the lengths of two trails and prints the total distance in kilometers.', 'El programa suma las longitudes de dos rutas y muestra la distancia total en kilómetros.']
+      },
+      B: {
+        x: 26, y: 69, parents: ['A'], source: alexCalculation,
+        title: ['Calculate round-trip distance', 'Calcular la distancia de ida y vuelta'],
+        info: ['Alex doubles the total distance to include the return trip. The printed output still shows the one-way distance.', 'Alex duplica la distancia total para incluir la vuelta. La salida todavía muestra la distancia de ida.']
+      },
+      C: {
+        x: 26, y: 115, parents: ['B'], source: alexReport,
+        title: ['Print the round-trip distance', 'Mostrar la distancia de ida y vuelta'],
+        info: ['Alex changes the output to show the round-trip distance with a label and one decimal place.', 'Alex cambia la salida para mostrar la distancia de ida y vuelta con una etiqueta y un decimal.']
+      },
+      D: {
+        x: 74, y: 69, parents: ['A'], source: samCount, sam: true,
+        title: ['Add the trail count', 'Añadir el número de rutas'],
+        info: ['Sam stores the number of trails in TRAIL_COUNT. The script still prints only the distance.', 'Sam guarda el número de rutas en TRAIL_COUNT. El programa todavía solo muestra la distancia.']
+      },
+      E: {
+        x: 74, y: 115, parents: ['D'], source: samReport, sam: true,
+        title: ['Print a trail summary', 'Mostrar un resumen de las rutas'],
+        info: ['Sam prints the number of trails and the total distance together.', 'Sam muestra el número de rutas y la distancia total en la misma línea.']
+      },
+      F: {
+        x: 55, y: 157, parents: ['A', 'E'], source: samReport, sam: true,
+        title: ['Merge trail summary', 'Integrar el resumen de rutas'],
+        info: ['The merge brings Sam’s summary into main. The Python file is the same as in E.', 'La fusión incorpora el resumen de Sam a main. El archivo Python es el mismo que en E.']
+      },
+      G: {
+        x: 50, y: 201, parents: ['C', 'F'], source: resolved,
+        title: ['Keep both features', 'Conservar ambas mejoras'],
+        info: ['The final script prints Sam’s trail summary and Alex’s round-trip distance on separate lines.', 'El programa final muestra el resumen de Sam y la distancia de ida y vuelta de Alex en líneas separadas.']
+      }
+    };
+
+    const main = { main: 'A' };
+    const alex = { ...main, 'round-trip': 'C' };
+    const samMain = { main: 'F' };
+    const mergedMain = { main: 'G' };
+    const command = (input, comment, status, changes = {}, flow = '') => ({
+      input, comment, status, changes, flow,
+      issue: changes.working === 'conflict' ? 'conflict' : flow === 'rejected' ? 'rejected' : ''
+    });
+
+    const stages = [
+      {
+        short: ['Init', 'Inicio'], title: ['Publish the first commit', 'Publicar el primer commit'],
+        story: ['A starter Python file is ready on a setup computer. The GitHub repository is empty.', 'El archivo Python está listo en el equipo inicial. El repositorio de GitHub está vacío.'],
+        info: ['The first commit saves the starting version of trails.py.', 'El primer commit guarda la versión inicial de trails.py.'],
+        setup: { laptop: 'setupLaptop' },
+        commands: [
+          command('git init -b main', ['Start a Git repository on this computer.', 'Inicializa un repositorio Git en este equipo.'],
+            ['The local repository is ready.', 'El repositorio local está listo.']),
+          command('git add trails.py && git commit -m "Start the guide"', ['Save the starter Python file as commit A.', 'Guarda el archivo Python inicial en el commit A.'],
+            ['Commit A appears on the setup computer.', 'El commit A aparece en el equipo inicial.'], { local: main, branch: 'main' }),
+          command('git push <repo-url> main', ['Send commit A to GitHub.', 'Envía el commit A a GitHub.'],
+            ['Commit A is now on GitHub.', 'El commit A ya está en GitHub.'], { remote: main }, 'push')
+        ]
+      },
+      {
+        short: ['Clone', 'Clonar'], title: ['Alex clones the guide', 'Alex clona la guía'],
+        story: ['Alex wants to work on the guide from a laptop.', 'Alex quiere trabajar en la guía desde su portátil.'],
+        info: ['Cloning copies the version of trails.py saved in A to Alex’s laptop.', 'Al clonar, se copia al portátil de Alex la versión de trails.py guardada en A.'],
+        setup: { laptop: 'alexLaptop', local: {}, branch: null },
+        commands: [
+          command('git clone <repo-url>', ['Copy the repository from GitHub to Alex’s laptop.', 'Copia el repositorio de GitHub al portátil de Alex.'],
+            ['Both trees contain commit A.', 'Ambos árboles contienen el commit A.'], { local: main, branch: 'main' }, 'fetch')
+        ]
+      },
+      {
+        short: 'Alex', title: ['Alex adds round-trip distance', 'Alex añade la distancia de ida y vuelta'],
+        story: ['Alex wants the guide to show the distance for walking out and back. Alex does the work on round-trip.', 'Alex quiere que la guía muestre la distancia de ida y vuelta. Trabaja en la rama round-trip.'],
+        info: ['Compare B and C to see the calculation and the change to the printed output in separate commits.', 'Compara B y C para ver el cálculo y el cambio en la salida en commits separados.'],
+        commands: [
+          command('git switch -c round-trip', ['Create Alex’s feature branch at A.', 'Crea la rama de Alex a partir de A.'],
+            ['Both local branches point to A.', 'Las dos ramas locales apuntan a A.'], { local: { ...main, 'round-trip': 'A' }, branch: 'round-trip' }),
+          command('git commit -am "Calculate round-trip distance"', ['Save the calculation as B.', 'Guarda el cálculo en B.'],
+            ['Commit B doubles the one-way distance.', 'El commit B duplica la distancia de ida.'], { local: { ...main, 'round-trip': 'B' } }),
+          command('git commit -am "Print the round-trip distance"', ['Save the new output as C.', 'Guarda la nueva salida en C.'],
+            ['Alex’s branch now ends at C. GitHub is still at A.', 'La rama de Alex llega a C. GitHub sigue en A.'], { local: alex })
+        ]
+      },
+      {
+        short: 'Sam', title: ['Sam adds a trail summary', 'Sam añade un resumen de las rutas'],
+        story: ['Sam also starts from A, on a separate branch called trail-summary. Sam wants the guide to show how many trails it covers.', 'Sam también parte de A, en su propia rama trail-summary. Quiere que la guía muestre cuántas rutas incluye.'],
+        info: ['Compare D and E to see how Sam adds the trail count and then uses it in the summary.', 'Compara D y E para ver cómo Sam añade el número de rutas y después lo usa en el resumen.'],
+        setup: { laptop: 'samLaptop', local: main, branch: 'main' },
+        commands: [
+          command('git switch -c trail-summary', ['Create Sam’s feature branch at A.', 'Crea la rama de Sam a partir de A.'],
+            ['Sam is on trail-summary.', 'Sam está en la rama trail-summary.'], { local: { ...main, 'trail-summary': 'A' }, branch: 'trail-summary' }),
+          command('git commit -am "Add the trail count"', ['Save the trail count as D.', 'Guarda el número de rutas en D.'],
+            ['Commit D records that the guide has two trails.', 'El commit D indica que la guía tiene dos rutas.'], { local: { ...main, 'trail-summary': 'D' } }),
+          command('git commit -am "Print a trail summary"', ['Save the summary output as E.', 'Guarda la salida con el resumen en E.'],
+            ['Sam’s feature branch now ends at E.', 'La rama de Sam llega a E.'], { local: { ...main, 'trail-summary': 'E' } }),
+          command('git switch main', ['Return to main to integrate the feature.', 'Vuelve a main para integrar la mejora.'],
+            ['Sam’s main still points to A.', 'La rama main de Sam sigue apuntando a A.'], { branch: 'main' }),
+          command('git merge --no-ff -m "Merge trail summary" trail-summary', ['Create merge commit F with parents A and E.', 'Crea el commit de fusión F con A y E como padres.'],
+            ['F is on Sam’s laptop. GitHub’s main is still at A.', 'F está en el portátil de Sam. La rama main de GitHub sigue en A.'], { local: { ...samMain, 'trail-summary': 'E' } }),
+          command('git push origin main', ['Publish F and its history to GitHub.', 'Publica F y su historial en GitHub.'],
+            ['GitHub’s main now points to F.', 'La rama main de GitHub ahora apunta a F.'], { remote: samMain }, 'push')
+        ]
+      },
+      {
+        short: ['Merge & push', 'Fusión y envío'], title: ['Alex merges and pushes', 'Alex fusiona y publica sus cambios'],
+        story: ['Alex brings the round-trip feature into main and tries to publish it. Sam has already updated main on GitHub.', 'Alex incorpora la mejora de ida y vuelta a main e intenta publicarla. Sam ya ha actualizado main en GitHub.'],
+        info: ['Compare C and F to see why the output conflicts, then look at G to see both changes together.', 'Compara C y F para ver por qué la salida entra en conflicto y consulta G para ver ambos cambios juntos.'],
+        setup: { laptop: 'alexLaptop', local: alex, branch: 'round-trip' },
+        commands: [
+          command('git switch main', ['Return to Alex’s main branch.', 'Vuelve a la rama main de Alex.'],
+            ['Alex’s main is at A. GitHub’s main is at F.', 'La rama main de Alex está en A y la de GitHub está en F.'], { branch: 'main' }),
+          command('git merge --ff-only round-trip', ['Move Alex’s main from A to C.', 'Avanza la rama main de Alex de A a C.'],
+            ['Alex’s main now includes the round-trip feature.', 'La rama main de Alex ya incluye el cálculo de ida y vuelta.'], { local: { ...alex, main: 'C' } }),
+          command('git push origin main', ['Try to publish Alex’s main.', 'Intenta publicar la rama main de Alex.'],
+            ['Push rejected. GitHub has Sam’s commit F, which Alex’s main is missing.', 'Push rechazado. GitHub tiene el commit F de Sam, que falta en la rama main de Alex.'], {}, 'rejected'),
+          command('git pull --no-rebase origin main', ['Download F and merge GitHub’s main into Alex’s main.', 'Descarga F e integra la rama main de GitHub en la de Alex.'],
+            ['Git downloads F. The merge stops because both versions changed the same print line.', 'Git descarga F. La fusión se detiene porque ambas versiones cambiaron la misma línea print.'], { fetched: 'F', working: 'conflict' }, 'fetch'),
+          command(['Edit trails.py', 'Editar trails.py'], ['Keep both output lines and remove the conflict markers.', 'Conserva ambas líneas de salida y elimina los marcadores de conflicto.'],
+            ['The file now prints the trail summary and the round-trip distance.', 'El archivo ya muestra el resumen de las rutas y la distancia de ida y vuelta.'], { working: 'resolved' }),
+          command('git add trails.py && git commit -m "Keep both features"', ['Save the resolution as merge commit G.', 'Guarda la resolución en el commit de fusión G.'],
+            ['Commit G connects Alex’s C and Sam’s F.', 'El commit G conecta el commit C de Alex con el F de Sam.'], { local: { ...alex, ...mergedMain }, fetched: null, working: null }),
+          command('git push origin main', ['Publish the merged main to GitHub.', 'Publica la rama main fusionada en GitHub.'],
+            ['Both main branches now point to G, which contains both features.', 'Ambas ramas main apuntan a G, que contiene las dos mejoras.'], { remote: mergedMain }, 'push')
+        ]
+      }
+    ];
+
+    let world = { local: {}, remote: {}, branch: null, working: null, fetched: null };
+    for (const stage of stages) {
+      world = { ...world, ...stage.setup };
+      stage.frames = [world];
+      for (const step of stage.commands) {
+        world = { ...world, ...step.changes };
+        stage.frames.push(world);
+      }
+    }
+
+    const $ = (id) => document.getElementById(id);
+    const svg = (tag) => document.createElementNS('http://www.w3.org/2000/svg', tag);
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    const narrow = matchMedia('(max-width: 820px)');
+    let language = 'en';
+    let stageIndex = 0;
+    let stepIndex = 0;
+    let timer = null;
+    let pinned = null;
+    let hovered = null;
+    let focused = null;
+    let shown;
+
+    const currentStage = () => stages[stageIndex];
+    const currentState = () => currentStage().frames[stepIndex];
+    const translate = (value) => typeof value === 'string' ? value : value[language === 'es' ? 1 : 0];
+    const tr = (key) => translate(ui[key]);
+
+    function createGraph(place) {
+      const root = $(place + '-graph');
+      const lines = svg('svg');
+      lines.setAttribute('viewBox', '0 0 1000 225');
+      lines.setAttribute('preserveAspectRatio', 'none');
+      lines.setAttribute('aria-hidden', 'true');
+      const empty = document.createElement('p');
+      empty.className = 'graph-empty';
+      root.append(lines, empty);
+      return { root, lines, empty, refs: $(place + '-refs'), nodes: new Map(), edges: new Map() };
+    }
+
+    const localGraph = createGraph('local');
+    const remoteGraph = createGraph('remote');
+
+    function reachable(refs, fetched) {
+      const seen = new Set();
+      function visit(id) {
+        if (!id || seen.has(id)) return;
+        seen.add(id);
+        commits[id].parents.forEach(visit);
+      }
+      Object.values(refs).forEach(visit);
+      visit(fetched);
+      return Object.keys(commits).filter((id) => seen.has(id));
+    }
+
+    function syncElements(elements, keys, create) {
+      for (const [key, element] of elements) {
+        if (!keys.includes(key)) {
+          element.remove();
+          elements.delete(key);
+        }
+      }
+      for (const key of keys) {
+        if (!elements.has(key)) elements.set(key, create(key));
+      }
+    }
+
+    function createCommitNode(id, graph, delay) {
+      const commit = commits[id];
+      const node = document.createElement('button');
+      node.type = 'button';
+      node.className = 'commit';
+      node.classList.toggle('sam', Boolean(commit.sam));
+      node.classList.toggle('enter', delay !== undefined);
+      node.style.setProperty('--x', commit.x + '%');
+      node.style.setProperty('--y', commit.y + 'px');
+      node.style.setProperty('--delay', (delay ?? 0) + 'ms');
+      node.dataset.commit = id;
+      const dot = document.createElement('span');
+      dot.className = 'commit-dot';
+      dot.textContent = id;
+      node.append(dot);
+      node.addEventListener('pointerenter', (event) => {
+        if (event.pointerType === 'touch') return;
+        hovered = node;
+        showSnapshot();
+      });
+      node.addEventListener('pointerleave', () => {
+        if (hovered === node) hovered = null;
+        showSnapshot();
+      });
+      node.addEventListener('focus', () => {
+        focused = node;
+        showSnapshot();
+      });
+      node.addEventListener('blur', () => {
+        if (focused === node) focused = null;
+        showSnapshot();
+      });
+      node.addEventListener('click', (event) => {
+        pinned = pinned === id ? null : id;
+        showSnapshot();
+        if (pinned && event.detail && narrow.matches) {
+          $('snapshot').scrollIntoView({ block: 'nearest', behavior: reducedMotion.matches ? 'instant' : 'smooth' });
+        }
+      });
+      const next = Array.from(graph.root.querySelectorAll('.commit')).find((other) => other.dataset.commit > id);
+      graph.root.insertBefore(node, next ?? null);
+      return node;
+    }
+
+    function renderGraph(graph, refs, branch, animate, { fetched, conflicts = [] } = {}) {
+      const ids = reachable(refs, fetched);
+      const arrivals = animate ? ids.filter((id) => !graph.nodes.has(id)) : [];
+      const delays = new Map(arrivals.map((id, i) => [id, i * 110]));
+      const edges = ids.flatMap((id) => commits[id].parents.map((parent) => parent + id));
+      syncElements(graph.edges, edges, ([parentId, childId]) => {
+        const parent = commits[parentId];
+        const child = commits[childId];
+        const x1 = parent.x * 10;
+        const x2 = child.x * 10;
+        const bend = (parent.y + child.y) / 2;
+        const line = svg('path');
+        line.setAttribute('d', 'M ' + x1 + ' ' + parent.y + ' C ' + x1 + ' ' + bend + ', ' + x2 + ' ' + bend + ', ' + x2 + ' ' + child.y);
+        line.setAttribute('pathLength', '1');
+        line.setAttribute('vector-effect', 'non-scaling-stroke');
+        line.classList.add('edge');
+        line.classList.toggle('sam', Boolean(parent.sam || child.sam));
+        line.classList.toggle('enter', animate);
+        line.style.setProperty('--delay', (delays.get(childId) ?? 0) + 'ms');
+        graph.lines.append(line);
+        return line;
+      });
+      syncElements(graph.nodes, ids, (id) => createCommitNode(id, graph, delays.get(id)));
+      for (const [id, node] of graph.nodes) {
+        const names = Object.keys(refs).filter((name) => refs[name] === id);
+        const checkout = id === refs[branch];
+        const conflicted = conflicts.includes(id);
+        node.classList.toggle('checkout', checkout);
+        node.classList.toggle('conflicted', conflicted);
+        const labels = ['Commit ' + id, translate(commits[id].title), ...names];
+        if (checkout) labels.push(tr('checkout'));
+        if (conflicted) labels.push(tr('conflict'));
+        node.setAttribute('aria-label', labels.join(' · '));
+      }
+      graph.empty.hidden = ids.length > 0;
+      graph.empty.textContent = tr('emptyTree');
+      const entries = Object.entries(refs);
+      const key = JSON.stringify([entries, branch]);
+      if (key === graph.refs.dataset.key) return;
+      graph.refs.dataset.key = key;
+      graph.refs.replaceChildren(...entries.map(([name, id]) => {
+        const ref = document.createElement('span');
+        ref.className = 'ref';
+        ref.classList.toggle('current', name === branch);
+        ref.classList.toggle('enter', animate);
+        ref.textContent = name + ' → ' + id;
+        return ref;
+      }));
+    }
+
+    function renderWorld(step, animate = Boolean(step)) {
+      const state = currentState();
+      const conflicts = state.working === 'conflict' ? [state.local.main, state.fetched] : [];
+      $('laptop-title').textContent = tr(state.laptop);
+      renderGraph(localGraph, state.local, state.branch, animate, { fetched: state.fetched, conflicts });
+      renderGraph(remoteGraph, state.remote, null, animate);
+      if (!hovered?.isConnected) hovered = null;
+      if (!focused?.isConnected) focused = null;
+      const transfer = $('transfer');
+      const flow = step?.flow ?? '';
+      transfer.hidden = !flow;
+      transfer.dataset.flow = flow;
+      transfer.textContent = { push: '→', fetch: '←', rejected: '×' }[flow] ?? '';
+      showSnapshot();
+    }
+
+    function highlight(source) {
+      const result = document.createDocumentFragment();
+      const tokens = /^(?:<<<<<<<|=======|>>>>>>>).*|"(?:[^"\\]|\\.)*"|#.*|\b\d+(?:\.\d+)?\b/gm;
+      const styles = { '"': 'syntax-string', '#': 'syntax-comment', '<': 'syntax-conflict', '=': 'syntax-conflict', '>': 'syntax-conflict' };
+      let cursor = 0;
+      for (const match of source.matchAll(tokens)) {
+        result.append(source.slice(cursor, match.index));
+        const token = document.createElement('span');
+        token.className = styles[match[0][0]] ?? 'syntax-number';
+        token.textContent = language === 'es' ? pythonComments[match[0]] ?? match[0] : match[0];
+        result.append(token);
+        cursor = match.index + match[0].length;
+      }
+      result.append(source.slice(cursor));
+      return result;
+    }
+
+    function showSnapshot() {
+      const { local, branch, remote, working } = currentState();
+      const id = (hovered ?? focused)?.dataset.commit ?? pinned ?? working ?? local[branch] ?? remote.main;
+      for (const graph of [localGraph, remoteGraph]) {
+        for (const [hash, node] of graph.nodes) node.setAttribute('aria-pressed', String(hash === pinned));
+      }
+      $('snapshot').toggleAttribute('data-working', Boolean(working));
+      if (id === shown) return;
+      shown = id;
+      const commit = commits[id];
+      const snapshot = commit ?? workingFile[id];
+      const label = snapshot ? translate(snapshot.title) : '';
+      $('snapshot-label').textContent = commit ? id + ' · ' + label : label;
+      const info = translate(currentStage().info);
+      $('code-info').textContent = snapshot ? info + ' ' + translate(snapshot.info) : info;
+      $('source').replaceChildren(snapshot ? highlight(snapshot.source) : tr('noSnapshot'));
+    }
+
+    function renderCommands() {
+      $('command-list').replaceChildren(...currentStage().commands.map((step) => {
+        const row = document.createElement('li');
+        row.className = 'command-row';
+        const input = document.createElement('code');
+        input.textContent = translate(step.input);
+        const comment = document.createElement('span');
+        comment.className = 'comment';
+        comment.textContent = translate(step.comment);
+        if (step.issue) {
+          const label = document.createElement('span');
+          label.className = 'issue-label';
+          label.hidden = true;
+          label.textContent = tr(step.issue);
+          comment.append(label);
+        }
+        row.append(input, comment);
+        return row;
+      }));
+    }
+
+    function renderProgress(step) {
+      const status = $('status');
+      status.textContent = step ? translate(step.status) : tr('selectCommit');
+      if (step?.issue) status.dataset.issue = step.issue;
+      else status.removeAttribute('data-issue');
+      for (const [i, row] of Array.from($('command-list').children).entries()) {
+        if (i === stepIndex - 1) row.setAttribute('aria-current', 'step');
+        else row.removeAttribute('aria-current');
+        const issue = row.querySelector('.issue-label');
+        if (issue) {
+          issue.hidden = i >= stepIndex;
+          row.classList.toggle('issue', !issue.hidden);
+        }
+      }
+    }
+
+    function renderRun() {
+      const running = timer !== null;
+      const complete = stepIndex === currentStage().commands.length;
+      $('run').textContent = tr(running ? 'running' : complete ? 'replay' : 'run');
+      $('run').setAttribute('aria-disabled', String(running));
+    }
+
+    function renderStage() {
+      const stage = currentStage();
+      const step = stage.commands[stepIndex - 1];
+      $('stage-title').textContent = translate(stage.title);
+      $('story').textContent = translate(stage.story);
+      renderCommands();
+      renderProgress(step);
+      renderWorld(step, false);
+      renderRun();
+    }
+
+    function goToStage(index, focusHeading = false) {
+      clearTimeout(timer);
+      timer = null;
+      stageIndex = index;
+      stepIndex = 0;
+      pinned = hovered = focused = shown = null;
+      $('previous').disabled = index === 0;
+      $('next').disabled = index === stages.length - 1;
+      for (const [i, button] of stageButtons.entries()) {
+        if (i === index) button.setAttribute('aria-current', 'step');
+        else button.removeAttribute('aria-current');
+      }
+      renderStage();
+      if (focusHeading) $('stage-title').focus();
+    }
+
+    function setLanguage(nextLanguage) {
+      language = nextLanguage;
+      document.documentElement.lang = language;
+      document.title = tr('appName') + ' | ULPGC';
+      document.querySelector('meta[name="description"]').content = tr('description');
+      document.querySelectorAll('[data-i18n]').forEach((element) => { element.textContent = tr(element.dataset.i18n); });
+      document.querySelectorAll('[data-i18n-aria]').forEach((element) => { element.setAttribute('aria-label', tr(element.dataset.i18nAria)); });
+      $('stage-carousel').setAttribute('aria-roledescription', tr('carousel'));
+      $('language-toggle').textContent = language === 'es' ? 'EN' : 'ES';
+      $('language-toggle').setAttribute('aria-label', tr('switchLanguage'));
+      for (const [i, button] of stageButtons.entries()) {
+        button.lastElementChild.textContent = translate(stages[i].short);
+        button.setAttribute('aria-label', (i + 1) + '. ' + translate(stages[i].title));
+      }
+      shown = null;
+      renderStage();
+    }
+
+    function advance() {
+      const stage = currentStage();
+      const step = stage.commands[stepIndex++];
+      const duration = step.issue === 'conflict' ? 4200 : step.issue === 'rejected' ? 2200 : reducedMotion.matches ? 650 : 1350;
+      timer = setTimeout(() => {
+        timer = null;
+        if (stepIndex < stage.commands.length) advance();
+        else renderRun();
+      }, duration);
+      renderProgress(step);
+      renderWorld(step);
+      renderRun();
+    }
+
+    const stageButtons = stages.map((stage, i) => {
+      const item = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'button';
+      const number = document.createElement('span');
+      number.className = 'stage-number';
+      number.textContent = i + 1;
+      const label = document.createElement('span');
+      label.textContent = translate(stage.short);
+      button.append(number, label);
+      button.setAttribute('aria-label', (i + 1) + '. ' + translate(stage.title));
+      button.addEventListener('click', () => goToStage(i));
+      item.append(button);
+      $('stage-list').append(item);
+      return button;
+    });
+
+    $('run').addEventListener('click', () => {
+      if (timer !== null) return;
+      if (stepIndex > 0) goToStage(stageIndex);
+      advance();
+    });
+    $('previous').addEventListener('click', () => goToStage(stageIndex - 1, true));
+    $('next').addEventListener('click', () => goToStage(stageIndex + 1, true));
+    $('language-toggle').addEventListener('click', () => setLanguage(language === 'en' ? 'es' : 'en'));
+    $('code-info-button').addEventListener('click', (event) => {
+      const info = $('code-info');
+      info.hidden = !info.hidden;
+      event.currentTarget.setAttribute('aria-expanded', String(!info.hidden));
+    });
+
+    goToStage(0);
+  </script>
+</body>
+</html>
